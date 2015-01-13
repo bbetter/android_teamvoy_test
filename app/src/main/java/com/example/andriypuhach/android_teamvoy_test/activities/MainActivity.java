@@ -25,7 +25,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -54,7 +53,7 @@ public class MainActivity extends Activity {
                            RestClient.getApi().getImagePathes(movie.getId(),new Callback<ImagesResult>() {
                                @Override
                                public void success(ImagesResult imagesResult, Response response) {
-                                   movieDetails.setImagePathes(imagesResult.getPosterPathes());
+                                   movieDetails.setImagePathes(imagesResult.getBackdropPathes());
                                    movie.setDetails(movieDetails);
                                    intent.putExtra("Movie", movie);
                                    startActivity(intent);
