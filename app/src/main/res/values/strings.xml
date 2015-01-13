@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MovieInfo v 1.0.0</string>
+    <string name="title_row">Заголовок:</string>
+    <string name="year_row">Дата випуску:</string>
+    <string name="overview_row">Опис:</string>
+    <string name="genre_row">Жанри:</string>
+    <string name="company_row">Компанії:</string>
+    <string name="tagline_row">Слоган:</string>
+    <string name="budget_row">Бюджет:</string>
+    <string name="revenue_row">Касові збори:</string>
+    <string name="searchHintString">знайти фільм</string>
+    <string name="prevButton">Prev</string>
+    <string name="nextButton">Next</string>
+    <string name="photos_row">Фото:</string>
+    <string name="homePage">Домашня сторінка:</string>
+    <string name="status">Статус:</string>
+</resources>
