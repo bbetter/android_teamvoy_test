@@ -1,8 +1,18 @@
 package com.example.andriypuhach.android_teamvoy_test.models;
 
+import android.content.Context;
+
 import org.joda.time.DateTime;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -22,7 +32,6 @@ public class Movie implements Serializable {
     public static String transformPathToURL(String cutPath, ImageSize size) {
         return ImageURL + size.toString() + cutPath;
     }
-
 
     public String getPosterURL(ImageSize size) {
         return ImageURL + size.toString() + poster_path;
@@ -61,7 +70,6 @@ public class Movie implements Serializable {
     public void setDetails(MovieDetails details) {
         this.details = details;
     }
-
 
     public enum ImageSize {
         W75 {
@@ -139,5 +147,33 @@ public class Movie implements Serializable {
 
     public void setVote_average(double vote_average) {
         this.vote_average = vote_average;
+    }
+
+    public static void serializeList(List<Movie> movies,File file){
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(movies);
+            objectOutputStream.close();
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static List<Movie> deserializeList(File file){
+        List<Movie> movies=new ArrayList<>();
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            movies = (List<Movie>) objectInputStream.readObject();
+            objectInputStream.close();
+            fileInputStream.close();
+        } catch (IOException e) {
+
+        }
+        catch (ClassNotFoundException e) {
+
+        }
+        return movies;
     }
  }

@@ -27,4 +27,5 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.6.1'
     compile 'com.squareup.okhttp:okhttp:+'
     compile 'com.squareup.okhttp:okhttp-urlconnection:+'
+    compile 'com.facebook.android:facebook-android-sdk:+'
 }
