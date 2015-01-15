@@ -46,8 +46,6 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class MainActivity extends Activity {
-
-    private boolean favoriteEnabled=false;
     TabHost tabs;
     private UiLifecycleHelper uiHelper;
     private Session.StatusCallback statusCallback = new Session.StatusCallback() {
@@ -407,7 +405,7 @@ public class MainActivity extends Activity {
                 listMenuItems.remove("Add To Favorites");
                 listMenuItems.add("Delete");
             }
-            String [] menuItems=new String[3];
+            String [] menuItems=new String[listMenuItems.size()];
             listMenuItems.toArray(menuItems);
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -530,7 +528,6 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         uiHelper.onResume();
-        favoriteEnabled=(Session.getActiveSession().isOpened());
     }
 
     @Override

@@ -44,6 +44,6 @@
               android:layout_height="wrap_content"
               android:textSize="25sp"
               android:textColor="@android:color/black"
-              android:text="SOME KIND OF ORIGINAL TITLE TITLE TITLE TITLE"
+              android:text="@string/lorem_ipsum"
               android:layout_toRightOf="@+id/thumbnail"/>
 </RelativeLayout>

@@ -12,8 +12,9 @@
     <string name="searchHintString">знайти фільм</string>
     <string name="prevButton">Prev</string>
     <string name="nextButton">Next</string>
-    <string name="photos_row">Фото:</string>
+    <string name="photos_row">Переглянути фото</string>
     <string name="homePage">Домашня сторінка:</string>
     <string name="status">Статус:</string>
     <string name="app_id">890577940973011</string>
+    <string name="lorem_ipsum">SOME KIND OF ORIGINAL TITLE TITLE TITLE TITLE</string>
 </resources>

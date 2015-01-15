@@ -3,9 +3,12 @@ package com.example.andriypuhach.android_teamvoy_test.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 
 import com.example.andriypuhach.android_teamvoy_test.R;
@@ -18,13 +21,25 @@ import java.util.List;
 import java.util.Locale;
 
 public class DetailsActivity extends Activity {
+    private float lastX;
+    private ViewFlipper viewFlipper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details);
-        Intent intent = getIntent();
-        LinearLayout photoLayout = (LinearLayout) findViewById(R.id.photosLayout);
-        Movie movie = (Movie) intent.getSerializableExtra("Movie");
+        final Intent intent = getIntent();
+        final Movie movie = (Movie) intent.getSerializableExtra("Movie");
+        viewFlipper = (ViewFlipper)findViewById(R.id.viewFlipper);
+        viewFlipper.removeAllViews();
+        List<String> lPathes=movie.getDetails().getImagePathes();
+        String [] iPathes=new String[lPathes.size()];
+        lPathes.toArray(iPathes);
+        for(String path : iPathes){
+            ImageView view = new ImageView(getApplicationContext());
+            view.setScaleType(ImageView.ScaleType.FIT_XY);
+            viewFlipper.addView(view);
+            ImageLoader.getInstance().displayImage(Movie.transformPathToURL(path, Movie.ImageSize.W600),view);
+        }
         TextView titleView = (TextView) findViewById(R.id.tvTitle);
         TextView overView = (TextView) findViewById(R.id.tvOverview);
         TextView yearView = (TextView) findViewById(R.id.tvYear);
@@ -35,6 +50,7 @@ public class DetailsActivity extends Activity {
         TextView revenueView = (TextView) findViewById(R.id.tvRevenue);
         TextView homePageView = (TextView) findViewById(R.id.tvHomePage);
         TextView statusPageView = (TextView) findViewById(R.id.tvStatus);
+
         StringBuilder genres = new StringBuilder();
         StringBuilder companies = new StringBuilder();
         List<MovieDetails.Genre> genresList;
@@ -54,13 +70,7 @@ public class DetailsActivity extends Activity {
                 companies.append(separator).append(c.getName());
             }
         }
-        photoLayout.removeAllViews();
-        List<String> iPathes = movie.getDetails().getImagePathes();
-        for (String str : iPathes) {
-            ImageView tempView = new ImageView(getApplicationContext());
-            photoLayout.addView(tempView);
-            ImageLoader.getInstance().displayImage(Movie.transformPathToURL(str, Movie.ImageSize.W600), tempView);
-        }
+
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         titleView.setText(movie.getOriginal_title());
         yearView.setText(String.valueOf(movie.getRelease_date().toLocalDate()));
@@ -72,6 +82,52 @@ public class DetailsActivity extends Activity {
         tagLineView.setText(movie.getDetails().getTagLine());
         homePageView.setText(movie.getDetails().getHomepage());
         statusPageView.setText(movie.getDetails().getStatus());
+    }
+
+
+    public boolean onTouchEvent(MotionEvent touchevent) {
+        switch (touchevent.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                lastX = touchevent.getX();
+                break;
+            case MotionEvent.ACTION_UP:
+                float currentX = touchevent.getX();
+
+                // Handling left to right screen swap.
+                if (lastX < currentX) {
+
+                    // If there aren't any other children, just break.
+                    if (viewFlipper.getDisplayedChild() == 0)
+                        break;
+
+                    // Next screen comes in from left.
+                    viewFlipper.setInAnimation(this, R.anim.slide_in_from_left);
+                    // Current screen goes out from right.
+                    viewFlipper.setOutAnimation(this, R.anim.slide_out_to_right);
+
+                    // Display next screen.
+                    viewFlipper.showNext();
+                }
+
+                // Handling right to left screen swap.
+                if (lastX > currentX) {
+
+                    // If there is a child (to the left), kust break.
+                    if (viewFlipper.getDisplayedChild() == 1)
+                        break;
+
+                    // Next screen comes in from right.
+                    viewFlipper.setInAnimation(this, R.anim.slide_in_from_right);
+                    // Current screen goes out from left.
+                    viewFlipper.setOutAnimation(this, R.anim.slide_out_to_left);
+
+                    // Display previous screen.
+                    viewFlipper.showPrevious();
+                }
+                break;
+        }
+        return false;
     }
 }
 

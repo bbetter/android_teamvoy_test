@@ -22,5 +22,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.DetailsActivity"/>
+        <activity android:name=".activities.BigPhotosActivity"/>
     </application>
     </manifest>
