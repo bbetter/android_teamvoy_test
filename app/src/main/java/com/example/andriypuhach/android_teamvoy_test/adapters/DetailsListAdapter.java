@@ -138,8 +138,8 @@ public class DetailsListAdapter extends BaseAdapter {
                     final DetailsInsertNoteHolder dtInHolder=new DetailsInsertNoteHolder();
                     currentImageByteArray=null;
                         convertView = inflater.inflate(R.layout.details_row_notes_insert, parent, false);
-                        dtInHolder.etText = (EditText) convertView.findViewById(R.id.noteTitleEdit);
-                        dtInHolder.etTitle = (EditText) convertView.findViewById(R.id.noteTextEdit);
+                        dtInHolder.etText = (EditText) convertView.findViewById(R.id.noteTextEdit);
+                        dtInHolder.etTitle = (EditText) convertView.findViewById(R.id.noteTitleEdit);
                         dtInHolder.btnUpload = (Button) convertView.findViewById(R.id.uploadPhotoBtn);
                         dtInHolder.btnSubmit = (Button) convertView.findViewById(R.id.submitNoteBtn);
                         dtInHolder.hsvHolder=(HorizontalScrollView)convertView.findViewById(R.id.imagesHoder);
@@ -163,7 +163,6 @@ public class DetailsListAdapter extends BaseAdapter {
                                 note.setImage(currentImageByteArray);
                                 Note.notes.add(note);
                                 Note.saveNotes();
-                                Note.refreshNotes();
                             }
                         });
 
