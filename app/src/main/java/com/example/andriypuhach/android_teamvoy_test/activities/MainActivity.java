@@ -12,9 +12,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +28,7 @@ import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieDetails;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
+import com.example.andriypuhach.android_teamvoy_test.models.Note;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.facebook.Session;
 import com.facebook.SessionState;
@@ -36,6 +39,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import retrofit.Callback;
@@ -45,6 +50,7 @@ import retrofit.client.Response;
 public class MainActivity extends Activity {
     TabHost tabs;
     private UiLifecycleHelper uiHelper;
+    private String currentSearchType="";
     private Session.StatusCallback statusCallback = new Session.StatusCallback() {
         @Override
         public void call(Session session, SessionState state, Exception exception) {
@@ -159,33 +165,56 @@ public class MainActivity extends Activity {
         });
         return v;
     }
+    private List<Movie> searchByNotes(String search){
+        Note.refreshNotes();
+        List<Movie> movies=new ArrayList<>();
+        Iterator<Note> iter=Note.notes.iterator();
+        while(iter.hasNext()){
+            Note n=iter.next();
+            if(n.getNoteTitle().toLowerCase().contains(search.toLowerCase()) && !movies.contains(n.getMovie()))
+                movies.add(n.getMovie());
+        }
+        return movies;
+    }
     void refreshListBySearch(String search) {
-        RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
-            @Override
-            public void success(MovieRequestResult result, Response response) {
-                if (result.getResults() != null) {
-                    currentSearchPage = result.getPage();
-                    totalPages = result.getTotal_pages();
-                    ArrayList<Movie> movies = (ArrayList<Movie>) result.getResults();
-                    listAdapter.setMovies(movies);
+        if(currentSearchType=="Звичайний пошук") {
+            RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
+                @Override
+                public void success(MovieRequestResult result, Response response) {
+                    if (result.getResults() != null) {
+                        currentSearchPage = result.getPage();
+                        totalPages = result.getTotal_pages();
+                        ArrayList<Movie> movies = (ArrayList<Movie>) result.getResults();
+                        listAdapter.setMovies(movies);
+                        ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
+                        if (listView.getHeaderViewsCount() == 0)
+                            listView.addHeaderView(header);
+                        listView.setAdapter(listAdapter);
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    currentSearchPage = 0;
+                    totalPages = 0;
+                    listAdapter.setMovies(new ArrayList<Movie>());
                     ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
                     if (listView.getHeaderViewsCount() == 0)
                         listView.addHeaderView(header);
                     listView.setAdapter(listAdapter);
                 }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                currentSearchPage = 0;
-                totalPages = 0;
-                listAdapter.setMovies(new ArrayList<Movie>());
-                ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
-                if (listView.getHeaderViewsCount() == 0)
-                    listView.addHeaderView(header);
-                listView.setAdapter(listAdapter);
-            }
-        });
+            });
+        }
+        else{
+            List<Movie> result=searchByNotes(search);
+            totalPages = (result.size() < 20) ? 1 : (int) Math.ceil((double) result.size() / 20.0);
+            ArrayList<Movie> movies = (ArrayList<Movie>) result;
+            listAdapter.setMovies(movies);
+            ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
+            if (listView.getHeaderViewsCount() == 0)
+                listView.addHeaderView(header);
+            listView.setAdapter(listAdapter);
+        }
     }
     //region detailsClickListener
     private OnItemClickListener detailsListener = new OnItemClickListener() {
@@ -432,6 +461,29 @@ public class MainActivity extends Activity {
         spec.setIndicator("Улюблені");
         tabs.addTab(spec);
         tabs.setCurrentTab(0);
+
+        Spinner spinner =(Spinner) findViewById(R.id.searchTypeSpinner);
+        List<String> list = new ArrayList<String>();
+        list.add("Звичайний пошук");
+        list.add("За нотатками");
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>
+                (this, android.R.layout.simple_spinner_item, list);
+
+        dataAdapter.setDropDownViewResource
+                (android.R.layout.simple_spinner_dropdown_item);
+
+        spinner.setAdapter(dataAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentSearchType=(String)parent.getItemAtPosition(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @Override

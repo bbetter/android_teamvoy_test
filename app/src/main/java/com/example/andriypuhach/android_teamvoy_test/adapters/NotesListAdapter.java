@@ -11,12 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
-import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.Note;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
-import java.util.zip.Inflater;
 
 /**
  * Created by Джон on 16.01.2015.
@@ -40,40 +37,52 @@ public class NotesListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return null;
+        return notes.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        NoteViewHolder noteViewHolder = new NoteViewHolder();
-        if(convertView==null){
-            convertView=inflater.inflate(R.layout.note_row,null);
-            noteViewHolder.tvNoteText = (TextView)convertView.findViewById(R.id.tvNoteText);
-            noteViewHolder.tvNoteTitle=(TextView)convertView.findViewById(R.id.tvNoteTitle);
-            noteViewHolder.ivImage=(ImageView)convertView.findViewById(R.id.noteImage);
-            convertView.setTag(noteViewHolder);
-        }
-        else{
-            noteViewHolder=(NoteViewHolder)convertView.getTag();
-        }
-        Note note=notes.get(position);
-        noteViewHolder.tvNoteText.setText(note.getText());
-        noteViewHolder.tvNoteTitle.setText(note.getNoteTitle());
-        Bitmap bitmap;
-        if(notes.get(position).getImage()!=null) {
-            bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
-            noteViewHolder.ivImage.setImageBitmap(bitmap);
-        }
-        return convertView;
-    }
-    public static class NoteViewHolder{
         TextView tvNoteTitle;
         TextView tvNoteText;
         ImageView ivImage;
+        if(convertView==null){
+            convertView=inflater.inflate(R.layout.note_row,parent,false);
+            tvNoteText = (TextView)convertView.findViewById(R.id.tvNoteText);
+            tvNoteTitle=(TextView)convertView.findViewById(R.id.tvNoteTitle);
+            ivImage=(ImageView)convertView.findViewById(R.id.noteImage);
+            convertView.setTag(new NoteViewHolder(ivImage,tvNoteTitle,tvNoteText));
+        }
+        else{
+            NoteViewHolder noteViewHolder=(NoteViewHolder)convertView.getTag();
+            ivImage=noteViewHolder.ivImage;
+            tvNoteText=noteViewHolder.tvNoteText;
+            tvNoteTitle=noteViewHolder.tvNoteTitle;
+        }
+        Note note=notes.get(position);
+        tvNoteText.setText(note.getText());
+        tvNoteTitle.setText(note.getNoteTitle());
+
+        if(notes.get(position).getImage()!=null) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
+            ivImage.setImageBitmap(bitmap);
+        }
+
+        return convertView;
+    }
+    static class NoteViewHolder{
+        public final TextView tvNoteTitle;
+        public final TextView tvNoteText;
+        public final ImageView ivImage;
+
+        public NoteViewHolder(ImageView image, TextView title,TextView text) {
+            this.tvNoteText=text;
+            this.tvNoteTitle=title;
+            this.ivImage=image;
+        }
     }
 }

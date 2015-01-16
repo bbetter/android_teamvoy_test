@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -20,29 +21,50 @@ public class Note implements Serializable {
     private final transient static File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/android_teamvoy_test");
     static{
         notes= new ArrayList<>();
-
     }
-    private int movieId;
-    private String movieTitle;
+    private static int uniqueNoteId=1;
+
+    public Movie getMovie() {
+        return movie;
+    }
+
+    public void setMovie(Movie movie) {
+        this.movie = movie;
+    }
+
+    private Movie movie;
 
     private String noteTitle;
     private String text;
     private byte[] image;
 
-    public int getMovieId() {
-        return movieId;
+    public static int getUniqueNoteId() {
+        return uniqueNoteId;
     }
 
+
+    public static void setUniqueNoteId(int uniqueNoteId) {
+        Note.uniqueNoteId = uniqueNoteId;
+    }
+
+    public int getMovieId() {
+        return movie.getId();
+    }
+
+    public Note(){
+        uniqueNoteId++;
+        movie=new Movie();
+    }
     public void setMovieId(int movieId) {
-        this.movieId = movieId;
+        movie.setId(movieId);
     }
 
     public String getMovieTitle() {
-        return movieTitle;
+        return movie.getTitle();
     }
 
     public void setMovieTitle(String movieTitle) {
-        this.movieTitle = movieTitle;
+        movie.setTitle(movieTitle);
     }
 
     public String getNoteTitle() {
@@ -79,6 +101,7 @@ public class Note implements Serializable {
     }
 
     public static void refreshNotes(){
+        appDir.mkdirs();
         File file = new File(appDir, "movienotes.movinf");
         if (!file.exists()) {
             try {
@@ -118,5 +141,20 @@ public class Note implements Serializable {
 
         }
         return movies;
+    }
+    public static void replace(Note oldNote,Note newNote){
+        removeNote(oldNote.getMovieId(),oldNote.getNoteTitle(),oldNote.getText());
+        notes.add(newNote);
+    }
+
+    public static void removeNote(int movieId,String noteTitle,String noteText){
+        Iterator<Note> iterator = Note.notes.iterator();
+        while(iterator.hasNext()){
+            Note n = iterator.next();
+            if(n.getMovieId()==movieId && n.getNoteTitle().toLowerCase().equals(noteTitle.toLowerCase())
+                    && (n.getText().equals(noteText.toLowerCase()))){
+                iterator.remove();
+            }
+        }
     }
 }

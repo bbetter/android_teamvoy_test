@@ -18,6 +18,13 @@
             android:inputType="text"
             android:hint="@string/searchHintString"
             android:imeOptions="actionSearch"/>
+    <Spinner
+        android:id="@+id/searchTypeSpinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+
+    </Spinner>
     <TabHost
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

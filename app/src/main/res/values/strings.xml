@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <string name="app_name">MovieInfo v 1.0.0</string>
     <string name="title_row">Заголовок:</string>
     <string name="year_row">Дата випуску:</string>
@@ -17,4 +17,9 @@
     <string name="status">Статус:</string>
     <string name="app_id">890577940973011</string>
     <string name="lorem_ipsum">SOME KIND OF ORIGINAL TITLE TITLE TITLE TITLE</string>
+
+    <string-array name="search_type_array">
+        <item android:id="@+id/usual">Звичайний</item>
+        <item android:id="@+id/bynotes">За нотатками</item>
+    </string-array>
 </resources>
