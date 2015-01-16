@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -20,14 +19,14 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.andriypuhach.android_teamvoy_test.MovieListAdapter;
+import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
+import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieDetails;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
-import com.facebook.Request;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
@@ -36,8 +35,6 @@ import com.facebook.widget.LoginButton;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +47,7 @@ public class MainActivity extends Activity {
     private UiLifecycleHelper uiHelper;
     private Session.StatusCallback statusCallback = new Session.StatusCallback() {
         @Override
-        public void call(Session session, SessionState state,
-                         Exception exception) {
+        public void call(Session session, SessionState state, Exception exception) {
             if (state.isOpened()) {
                 Log.d("FacebookSampleActivity", "Facebook session opened");
             } else if (state.isClosed()) {
@@ -60,52 +56,40 @@ public class MainActivity extends Activity {
         }
     };
 
-
-    private final File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/android_teamvoy_test");
-
     private int currentPopularPage = 1;
     private int currentUpcomingPage = 1;
     private int currentTopRatedPage = 1;
     private int currentFavoritePage = 1;
     private int currentSearchPage = 1;
 
-
-
     private String currentTask = "popular";
     private int totalPages = 1000;
     private ListView listView;
     private EditText searchView;
     private MovieListAdapter listAdapter;
-    private List<Movie> favorites;
     private Movie selectedMovie = null;
     private View header;
     private LoginButton btn;
-
-
     View createHeader() {
         View v = getLayoutInflater().inflate(R.layout.header, null);
         v.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int currentPage=1;
                 switch (currentTask) {
                     case "popular":
                         if (currentPopularPage < totalPages) {
                             currentPopularPage++;
-                            currentPage=currentPopularPage;
                         }
                         break;
 
                     case "upcoming":
                         if (currentUpcomingPage<totalPages) {
                             currentUpcomingPage++;
-                            currentPage=currentUpcomingPage;
                         }
                         break;
                     case "top_rated":
                         if(currentTopRatedPage<totalPages){
                             currentTopRatedPage++;
-                            currentPage=currentTopRatedPage;
                         }
                         break;
                     case "favorite":
@@ -124,7 +108,6 @@ public class MainActivity extends Activity {
                     default:
                         if(currentPopularPage<totalPages){
                             currentPopularPage++;
-                            currentPage=currentPopularPage;
                         }
                         break;
                 }
@@ -135,25 +118,21 @@ public class MainActivity extends Activity {
         v.findViewById(R.id.prevButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int currentPage=1;
                 switch (currentTask) {
                     case "popular":
                         if (currentPopularPage > 1) {
                             currentPopularPage--;
-                            currentPage=currentPopularPage;
                         }
                         break;
 
                     case "upcoming":
                         if (currentUpcomingPage>1) {
                             currentUpcomingPage--;
-                            currentPage=currentUpcomingPage;
                         }
                         break;
                     case "top_rated":
                         if(currentTopRatedPage>1){
                             currentTopRatedPage--;
-                            currentPage=currentTopRatedPage;
                         }
                         break;
                     case "favorite":
@@ -172,7 +151,6 @@ public class MainActivity extends Activity {
                     default:
                         if(currentPopularPage>1){
                             currentPopularPage--;
-                            currentPage=currentPopularPage;
                         }
                         break;
                 }
@@ -181,7 +159,6 @@ public class MainActivity extends Activity {
         });
         return v;
     }
-
     void refreshListBySearch(String search) {
         RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
             @Override
@@ -210,7 +187,6 @@ public class MainActivity extends Activity {
             }
         });
     }
-
     //region detailsClickListener
     private OnItemClickListener detailsListener = new OnItemClickListener() {
         @Override
@@ -317,49 +293,12 @@ public class MainActivity extends Activity {
 
         }
     }
-
-    public boolean checkPermissions() {
-        Session s = Session.getActiveSession();
-        if (s != null) {
-            return s.getPermissions().contains("publish_actions");
-        } else
-            return false;
-    }
-
-    public void requestPermissions() {
-        Session s = Session.getActiveSession();
-        if (s != null)
-            s.requestNewPublishPermissions(new Session.NewPermissionsRequest(
-                    this, "publish_actions"));
-    }
-
-    private void postToFacebook(String text){
-        if(checkPermissions()){
-            Request request = Request.newStatusUpdateRequest(
-                    Session.getActiveSession(), "I like "+text,
-                    new Request.Callback() {
-                        @Override
-                        public void onCompleted(com.facebook.Response response) {
-                            if (response.getError() == null)
-                                Toast.makeText(MainActivity.this,
-                                        "Status updated successfully",
-                                        Toast.LENGTH_LONG).show();
-                        }
-
-
-                    });
-            request.executeAsync();
-        }
-        else{
-            requestPermissions();
-        }
-    }
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getTitle() == "Add To Favorites") {
-            if (!isMovieInList(favorites, selectedMovie)) {
-                favorites.add(selectedMovie);
-                Movie.serializeList(favorites, new File(appDir.getAbsolutePath() + "/favorites.movinf"));
+            if (!isMovieInList(Movie.favorites, selectedMovie)) {
+                Movie.favorites.add(selectedMovie);
+                Movie.saveFavorites();
                 Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
@@ -374,26 +313,23 @@ public class MainActivity extends Activity {
                     Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
 
             startActivity(Intent.createChooser(sharingIntent, "Share via"));
-
         }
         else if(item.getTitle()=="Delete"){
-            removeById(selectedMovie.getId(),favorites);
-            Movie.serializeList(favorites, new File(appDir.getAbsolutePath() + "/favorites.movinf"));
+            removeById(selectedMovie.getId(),Movie.favorites);
+            Movie.saveFavorites();
             refreshFavorites();
             Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
         }
         else if(item.getTitle()=="Post To Facebook"){
-            postToFacebook(selectedMovie.getOriginal_title());
+            FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
         }
         return true;
     }
-
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         if (view.getId() == R.id.listView) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             selectedMovie = listAdapter.getMovie(info.position - 1);
-
             menu.setHeaderTitle(selectedMovie.getTitle());
             List<String> listMenuItems= new ArrayList<>();
             listMenuItems.add("Share");
@@ -412,40 +348,17 @@ public class MainActivity extends Activity {
             }
         }
     }
-
     //endregion
     //region favorites
-    private void initFavorites() {
-        favorites = new ArrayList<>();
-        appDir.mkdirs();
-        File file = new File(appDir, "favorites.movinf");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        favorites = Movie.deserializeList(file);
-    }
-
     public void refreshFavorites() {
-        File file = new File(appDir, "favorites.movinf");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        favorites = Movie.deserializeList(file);
-        if (favorites != null) {
-            totalPages = (favorites.size() < 20) ? 1 : (int) Math.ceil((double) favorites.size() / 20.0);
+      Movie.refreshFavorites();
+        if (Movie.favorites!= null) {
+            totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
             int begin =((currentFavoritePage-1)*20);
             int end =begin+20;
-            if (favorites.size()<=end)
-                end=favorites.size();
-            listAdapter.setMovies(new ArrayList<>(favorites.subList(begin,end)));
+            if (Movie.favorites.size()<=end)
+                end=Movie.favorites.size();
+            listAdapter.setMovies(new ArrayList<>(Movie.favorites.subList(begin,end)));
             ((TextView) header.findViewById(R.id.currentPageView)).setText(currentFavoritePage + " of " + totalPages);
             if (listView.getHeaderViewsCount() == 0)
                 listView.addHeaderView(header);
@@ -455,7 +368,6 @@ public class MainActivity extends Activity {
             listView.setAdapter(listAdapter);
         }
     }
-
     //endregion
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -464,8 +376,6 @@ public class MainActivity extends Activity {
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         listAdapter = new MovieListAdapter(getApplicationContext());
-
-        initFavorites();
         header = createHeader();
         btn=(LoginButton)findViewById(R.id.fb_login_button);
         btn.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {

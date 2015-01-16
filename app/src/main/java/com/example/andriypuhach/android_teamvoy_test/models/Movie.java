@@ -1,6 +1,7 @@
 package com.example.andriypuhach.android_teamvoy_test.models;
 
 import android.content.Context;
+import android.os.Environment;
 
 import org.joda.time.DateTime;
 
@@ -18,6 +19,12 @@ import java.util.List;
 
 public class Movie implements Serializable {
     private final transient static String ImageURL = "https://image.tmdb.org/t/p/";
+    private final transient static File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/android_teamvoy_test");
+    public static transient List<Movie> favorites;
+    static{
+        favorites=new ArrayList<>();
+        refreshFavorites();
+    }
     private int id;
     private int vote_count;
     private String original_title;
@@ -28,6 +35,7 @@ public class Movie implements Serializable {
     private double popularity;
     private boolean adult;
     private MovieDetails details;
+
 
     public static String transformPathToURL(String cutPath, ImageSize size) {
         return ImageURL + size.toString() + cutPath;
@@ -44,8 +52,6 @@ public class Movie implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-
-
 
     public double getPopularity() {
         return popularity;
@@ -149,7 +155,22 @@ public class Movie implements Serializable {
         this.vote_average = vote_average;
     }
 
-    public static void serializeList(List<Movie> movies,File file){
+
+    public static void refreshFavorites(){
+        File file = new File(appDir, "favorites.movinf");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        favorites = deserializeList(file);
+    }
+    public static void saveFavorites(){
+        serializeList(favorites, new File(appDir.getAbsolutePath() + "/favorites.movinf"));
+    }
+    private static void serializeList(List<Movie> movies,File file){
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
@@ -160,7 +181,7 @@ public class Movie implements Serializable {
             e.printStackTrace();
         }
     }
-    public static List<Movie> deserializeList(File file){
+    private static List<Movie> deserializeList(File file){
         List<Movie> movies=new ArrayList<>();
         try {
             FileInputStream fileInputStream = new FileInputStream(file);

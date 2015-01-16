@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+        <TableLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:shrinkColumns="*">
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/title_row"
+                    android:singleLine="false"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/tvTitle"
+                    android:text="The Hobbit: The Battle of the Five Armies"
+                    android:gravity="fill_horizontal|bottom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/homePage"
+                    android:singleLine="false"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    />
+                <TextView android:id="@+id/tvHomePage"
+                    android:text="www.hobbit.com"
+                    android:gravity="fill_horizontal|bottom"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/status" android:singleLine="false" android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    />
+                <TextView android:id="@+id/tvStatus"
+                    android:text="Released"
+                    android:gravity="fill_horizontal|bottom"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/year_row" android:singleLine="false" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvYear"
+                    android:layout_column="1"
+                    android:text="2014" android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/tagline_row" android:singleLine="false" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_span="1" android:layout_column="0"
+                    android:layout_weight="2"/>
+                <TextView android:id="@+id/tvTagline"
+                    android:layout_column="1"
+                    android:text="Witness the defining chapter of the Middle-Earth saga" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/budget_row" android:singleLine="false" android:layout_width="0dp"
+                    android:layout_height="fill_parent" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvBudget"
+                    android:layout_column="1"
+                    android:text="$ 0,0" android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:showDividers="middle|beginning|end">
+                <TextView android:text="@string/revenue_row" android:singleLine="false" android:capitalize="words"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvRevenue"
+                    android:layout_column="1"
+                    android:text="$ 1,222,000,00" android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/genre_row" android:singleLine="false" android:layout_height="wrap_content"
+                    android:layout_width="0dp" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvGenre"
+                    android:layout_column="1"
+                    android:text="Adventure,Fantasy" android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/company_row" android:singleLine="false" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvCompany"
+                    android:layout_column="1"
+                    android:text="Metro-Goldwyn-Mayer (MGM),WingNut Films,New Line Cinema" android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView android:text="@string/overview_row" android:singleLine="true" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="2"/>
+                <TextView android:id="@+id/tvOverview"
+                    android:layout_column="1"
+                    android:text="Mere seconds after the events of \&quot;Desolation\&quot;, Bilbo and Company continue to claim a mountain of treasure that was guarded long ago: But with Gandalf the Grey also facing some formidable foes of his own, the Hobbit is outmatched when the brutal army of orcs led by Azog the Defiler returns. But with other armies such as the elves and the men of Lake-Town, which are unsure to be trusted, are put to the ultimate test when Smaug&apos;s wrath, Azog&apos;s sheer strength, and Sauron&apos;s force of complete ends attack. All in all, the trusted armies have two choices: unite or die. But even worse, Bilbo gets put on a knife edge and finds himself fighting with Hobbit warfare with all of his might for his dwarf-friends, as the hope for Middle-Earth is all put in Bilbo&apos;s hands. The one \&quot;precious\&quot; thing to end it all."
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="5"/>
+            </TableRow>
+        </TableLayout>

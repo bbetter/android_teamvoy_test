@@ -62,8 +62,9 @@
             </FrameLayout>
         </LinearLayout>
     </TabHost>
-    <ListView android:layout_width="match_parent" android:layout_height="wrap_content" android:id="@+id/listView"
+    <ListView android:layout_width="match_parent" android:layout_height="wrap_content"
+              android:id="@+id/listView"
               android:listSelector="@drawable/list_selector"
-              android:footerDividersEnabled="true"/>
+/>
 
 </LinearLayout>
