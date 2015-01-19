@@ -1,7 +1,8 @@
 package com.example.andriypuhach.android_teamvoy_test.models;
 
-import android.content.Context;
 import android.os.Environment;
+
+import com.example.andriypuhach.android_teamvoy_test.Joiner;
 
 import org.joda.time.DateTime;
 
@@ -13,7 +14,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -34,7 +34,7 @@ public class Movie implements Serializable {
     private double vote_average;
     private double popularity;
     private boolean adult;
-    private MovieDetails details;
+    private Details details;
 
 
     public static String transformPathToURL(String cutPath, ImageSize size) {
@@ -69,11 +69,11 @@ public class Movie implements Serializable {
         this.adult = adult;
     }
 
-    public MovieDetails getDetails() {
+    public Details getDetails() {
         return details;
     }
 
-    public void setDetails(MovieDetails details) {
+    public void setDetails(Details details) {
         this.details = details;
     }
 
@@ -193,8 +193,300 @@ public class Movie implements Serializable {
 
         }
         catch (ClassNotFoundException e) {
-
         }
         return movies;
     }
- }
+
+    public static class Details implements Serializable {
+        private float budget;
+        private float revenue;
+        private String homepage;
+        private String tagline;
+        private String overview;
+        private String status;
+        private List<Note> notes;
+
+        private List<Genre> genres;
+        private List<Company> production_companies;
+        private List<Country> production_countries;
+        private List<Language> spoken_languages;
+        private List<String> imagePathes;
+
+        private String genresSimplified;
+        private String companiesSimplified;
+
+        public Details() {
+
+        }
+
+        public String getHomepage() {
+            return homepage;
+        }
+
+        public void setHomepage(String homepage) {
+            this.homepage = homepage;
+        }
+
+        public float getBudget() {
+            return budget;
+        }
+
+        public void setBudget(float budget) {
+            this.budget = budget;
+        }
+
+        public String getTagline() {
+            return tagline;
+        }
+
+        public void setTagline(String tagline) {
+            this.tagline = tagline;
+        }
+
+        public String getOverview() {
+            return overview;
+        }
+
+        public void setOverview(String overview) {
+            this.overview = overview;
+        }
+
+        public List<Genre> getGenres() {
+            return genres;
+        }
+
+        public void setGenres(List<Genre> genres) {
+            this.genres = genres;
+            setGenresSimplified(getGenresCommaSeparatedList());
+        }
+
+        public String getGenresCommaSeparatedList(){
+            List<String> genreStrings=new ArrayList<>();
+            if(genres!=null) {
+                for (Genre g : genres) {
+                    genreStrings.add(g.getName());
+                }
+                return Joiner.join(genreStrings, ',');
+            }
+            else{
+                return getGenresSimplified();
+            }
+        }
+
+        public String getCompaniesCommaSeparatedList(){
+            if(genres!=null) {
+                List<String> companyStrings = new ArrayList<>();
+                for (Company c : production_companies) {
+                    companyStrings.add(c.getName());
+                }
+
+                return Joiner.join(companyStrings, ',');
+            }
+            else{
+                return getCompaniesSimplified();
+            }
+        }
+        public String getImagesCommaSeparatedList(){
+           return Joiner.join(imagePathes,',');
+        }
+
+        public List<String> getImagePathes() {
+            return imagePathes;
+        }
+
+        public void setImagePathes(List<String> imagePathes) {
+            this.imagePathes = imagePathes;
+        }
+
+        public float getRevenue() {
+            return revenue;
+        }
+
+        public void setRevenue(float revenue) {
+            this.revenue = revenue;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public List<Company> getProduction_companies() {
+            return production_companies;
+        }
+
+        public void setProduction_companies(List<Company> production_companies) {
+            this.production_companies = production_companies;
+            setCompaniesSimplified(getCompaniesCommaSeparatedList());
+        }
+
+        public List<Country> getProduction_countries() {
+            return production_countries;
+        }
+
+        public void setProduction_countries(List<Country> production_countries) {
+            this.production_countries = production_countries;
+        }
+
+        public List<Language> getSpoken_languages() {
+            return spoken_languages;
+        }
+
+        public void setSpoken_languages(List<Language> spoken_languages) {
+            this.spoken_languages = spoken_languages;
+        }
+
+        public List<Note> getNotes() {
+            return notes;
+        }
+
+        public void setNotes(List<Note> notes) {
+            this.notes = notes;
+        }
+
+        public String getGenresSimplified() {
+            return genresSimplified;
+        }
+
+        public void setGenresSimplified(String genresSimplified) {
+            this.genresSimplified = genresSimplified;
+        }
+
+        public String getCompaniesSimplified() {
+            return companiesSimplified;
+        }
+
+        public void setCompaniesSimplified(String companiesSimplified) {
+            this.companiesSimplified = companiesSimplified;
+        }
+
+        public class Language implements Serializable {
+            private String iso;
+            private String name;
+
+            public String getIso() {
+                return iso;
+            }
+
+            public void setIso(String iso) {
+                this.iso = iso;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+
+        public class Company implements Serializable {
+            private int id;
+            private String name;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+
+        public class Country implements Serializable {
+            private String iso;
+            private String name;
+
+            public String getIso() {
+                return iso;
+            }
+
+            public void setIso(String iso) {
+                this.iso = iso;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+
+        public class Genre implements Serializable {
+            private int id;
+            private String name;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+
+        /**
+         * Created by Джон on 15.01.2015.
+         */
+        public static class Note implements Serializable {
+            private int id;
+            private String noteTitle;
+            private String noteText;
+            private String imagePath;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public String getNoteTitle() {
+                return noteTitle;
+            }
+
+            public void setNoteTitle(String noteTitle) {
+                this.noteTitle = noteTitle;
+            }
+
+            public String getNoteText() {
+                return noteText;
+            }
+
+            public void setNoteText(String noteText) {
+                this.noteText = noteText;
+            }
+
+            public String getImagePath() {
+                return imagePath;
+            }
+
+            public void setImagePath(String imagePath) {
+                this.imagePath = imagePath;
+            }
+        }
+    }
+}

@@ -1,6 +1,8 @@
 package com.example.andriypuhach.android_teamvoy_test;
 
 import android.app.Application;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.test.ApplicationTestCase;
 
 /**
@@ -9,5 +11,6 @@ import android.test.ApplicationTestCase;
 public class ApplicationTest extends ApplicationTestCase<Application> {
     public ApplicationTest() {
         super(Application.class);
+
     }
 }

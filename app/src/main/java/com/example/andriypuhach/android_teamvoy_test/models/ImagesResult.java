@@ -22,7 +22,7 @@ public class ImagesResult implements Serializable {
     }
 
     public List<String> getBackdropPathes(){
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         for(Image i:backdrops){
             list.add(i.getFile_path());

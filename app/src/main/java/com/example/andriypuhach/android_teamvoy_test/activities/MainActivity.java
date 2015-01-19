@@ -22,13 +22,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
+import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
-import com.example.andriypuhach.android_teamvoy_test.models.MovieDetails;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
-import com.example.andriypuhach.android_teamvoy_test.models.Note;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.facebook.Session;
 import com.facebook.SessionState;
@@ -39,8 +38,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import retrofit.Callback;
@@ -165,17 +162,6 @@ public class MainActivity extends Activity {
         });
         return v;
     }
-    private List<Movie> searchByNotes(String search){
-        Note.refreshNotes();
-        List<Movie> movies=new ArrayList<>();
-        Iterator<Note> iter=Note.notes.iterator();
-        while(iter.hasNext()){
-            Note n=iter.next();
-            if(n.getNoteTitle().toLowerCase().contains(search.toLowerCase()) && !movies.contains(n.getMovie()))
-                movies.add(n.getMovie());
-        }
-        return movies;
-    }
     void refreshListBySearch(String search) {
         if(currentSearchType=="Звичайний пошук") {
             RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
@@ -206,7 +192,8 @@ public class MainActivity extends Activity {
             });
         }
         else{
-            List<Movie> result=searchByNotes(search);
+            MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
+            List<Movie> result=dbHelper.searchByNote(search);
             totalPages = (result.size() < 20) ? 1 : (int) Math.ceil((double) result.size() / 20.0);
             ArrayList<Movie> movies = (ArrayList<Movie>) result;
             listAdapter.setMovies(movies);
@@ -224,14 +211,14 @@ public class MainActivity extends Activity {
             MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) listView.getAdapter()).getWrappedAdapter();
             final Movie movie = adapter.getMovie(position - 1);
             if (movie.getDetails() == null) {
-                RestClient.getApi().getDetails(movie.getId(), new Callback<MovieDetails>() {
+                RestClient.getApi().getDetails(movie.getId(), new Callback<Movie.Details>() {
                     @Override
-                    public void success(final MovieDetails movieDetails, Response response) {
+                    public void success(final Movie.Details details, Response response) {
                         RestClient.getApi().getImagePathes(movie.getId(), new Callback<ImagesResult>() {
                             @Override
                             public void success(ImagesResult imagesResult, Response response) {
-                                movieDetails.setImagePathes(imagesResult.getBackdropPathes());
-                                movie.setDetails(movieDetails);
+                                details.setImagePathes(imagesResult.getBackdropPathes());
+                                movie.setDetails(details);
                                 intent.putExtra("Movie", movie);
                                 startActivity(intent);
                             }
@@ -471,7 +458,6 @@ public class MainActivity extends Activity {
 
         dataAdapter.setDropDownViewResource
                 (android.R.layout.simple_spinner_dropdown_item);
-
         spinner.setAdapter(dataAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

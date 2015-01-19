@@ -11,8 +11,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
-import com.example.andriypuhach.android_teamvoy_test.models.Note;
+import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
+import com.example.andriypuhach.android_teamvoy_test.models.Movie;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -21,12 +27,12 @@ import java.util.List;
 public class NotesListAdapter extends BaseAdapter {
     private Context context;
     private LayoutInflater inflater;
-    private List<Note> notes;
+    private List<Movie.Details.Note> notes;
     public NotesListAdapter(Context context){
         this.context=context;
         inflater=LayoutInflater.from(context);
     }
-    public void setNotes(List<Note> notes){
+    public void setNotes(List<Movie.Details.Note> notes){
         this.notes=notes;
         notifyDataSetChanged();
     }
@@ -50,6 +56,7 @@ public class NotesListAdapter extends BaseAdapter {
         TextView tvNoteTitle;
         TextView tvNoteText;
         ImageView ivImage;
+
         if(convertView==null){
             convertView=inflater.inflate(R.layout.note_row,parent,false);
             tvNoteText = (TextView)convertView.findViewById(R.id.tvNoteText);
@@ -63,15 +70,10 @@ public class NotesListAdapter extends BaseAdapter {
             tvNoteText=noteViewHolder.tvNoteText;
             tvNoteTitle=noteViewHolder.tvNoteTitle;
         }
-        Note note=notes.get(position);
-        tvNoteText.setText(note.getText());
+        Movie.Details.Note note=notes.get(position);
+        tvNoteText.setText(note.getNoteText());
         tvNoteTitle.setText(note.getNoteTitle());
-
-        if(notes.get(position).getImage()!=null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
-            ivImage.setImageBitmap(bitmap);
-        }
-
+        ImageLoader.getInstance().displayImage("file:///"+note.getImagePath(),ivImage);
         return convertView;
     }
     static class NoteViewHolder{

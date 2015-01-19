@@ -1,8 +1,11 @@
 package com.example.andriypuhach.android_teamvoy_test.activities;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -12,41 +15,44 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ViewFlipper;
 
-
-import com.example.andriypuhach.android_teamvoy_test.NotesUpdater;
+import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
-import com.example.andriypuhach.android_teamvoy_test.models.Note;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DetailsActivity extends Activity {
+    //region viewFlipper variables
     private float lastX;
     private ViewFlipper viewFlipper;
-    private static final int SELECT_PHOTO=100;
-    public static byte [] currentImageByteArray;
+    //endregion
+    private ListView detailsListView;
+    private DetailsListAdapter detailsListAdapter;
+
     private CreateNoteDialog cdd ;
     private EditNoteDialog edd;
-    private Note selectedNote;
+    private Movie.Details.Note selectedNote;
+    private MovieDatabaseHelper dbHelper;
+    private Movie movie;
 
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+
         if(v.getId()==R.id.notesListView){
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            selectedNote=(Note)DetailsListAdapter.notesAdapter.getItem(info.position);
+            selectedNote=(Movie.Details.Note)DetailsListAdapter.notesAdapter.getItem(info.position);
             menu.setHeaderTitle(selectedNote.getNoteTitle());
             List<String> listMenuItems= new ArrayList<>();
             listMenuItems.add("Edit");
@@ -63,14 +69,25 @@ public class DetailsActivity extends Activity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getTitle() == "Delete") {
-            Note.removeNote(selectedNote.getMovieId(),selectedNote.getNoteTitle(), selectedNote.getText());
-            Note.saveNotes();
-            Note.refreshNotes();
-            List<Note> notes=Note.getMovieNotes(selectedNote.getMovieId());
-            NotesUpdater.update(DetailsListAdapter.notesView,DetailsListAdapter.notesAdapter,notes,250);
+            dbHelper.deleteNote(selectedNote.getId());
+            movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
+            detailsListAdapter.setMovie(movie);
+            detailsListView.setVisibility(View.INVISIBLE);
+            detailsListView.setVisibility(View.VISIBLE);
         }
         else
         if(item.getTitle()=="Edit"){
+            edd=new EditNoteDialog(DetailsActivity.this);
+            edd.setTitle("Редагувати нотатку");
+            edd.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
+                    detailsListAdapter.setMovie(movie);
+                    detailsListView.setVisibility(View.INVISIBLE);
+                    detailsListView.setVisibility(View.VISIBLE);
+                }
+            });
             edd.setEditedNote(selectedNote);
             edd.show();
         }
@@ -86,6 +103,18 @@ public class DetailsActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
         if(menuItem.getItemId()==R.id.add_note){
+            cdd=new CreateNoteDialog(DetailsActivity.this);
+            cdd.setTitle("Додати нотатку");
+            cdd.setMovieInfo(movie);
+            cdd.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
+                    detailsListAdapter.setMovie(movie);
+                    detailsListView.invalidateViews();
+                    detailsListView.scrollBy(0,0);
+                }
+            });
             cdd.show();
         }
         return true;
@@ -95,8 +124,10 @@ public class DetailsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details);
+        dbHelper=new MovieDatabaseHelper(this);
         final Intent intent = getIntent();
-        final Movie movie = (Movie) intent.getSerializableExtra("Movie");
+        movie = (Movie) intent.getSerializableExtra("Movie");
+        movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
         viewFlipper = (ViewFlipper)findViewById(R.id.viewFlipper);
         viewFlipper.removeAllViews();
 
@@ -109,36 +140,59 @@ public class DetailsActivity extends Activity {
             viewFlipper.addView(view);
             ImageLoader.getInstance().displayImage(Movie.transformPathToURL(path, Movie.ImageSize.W600),view);
         }
-        Note.refreshNotes();
-        ListView listView=(ListView)findViewById(R.id.detailsList);
-        DetailsListAdapter adapter = new DetailsListAdapter(this,movie, Note.getMovieNotes(movie.getId()));
-        listView.setAdapter(adapter);
 
-        cdd=new CreateNoteDialog(DetailsActivity.this);
-        cdd.setTitle("Додати нотатку");
-        cdd.setMovieInfo(movie.getId(),movie.getOriginal_title());
-        edd=new EditNoteDialog(DetailsActivity.this);
-        edd.setTitle("Редагувати нотатку");
+        detailsListView=(ListView)findViewById(R.id.detailsList);
+        detailsListAdapter= new DetailsListAdapter(this,movie);
+        detailsListView.setAdapter(detailsListAdapter);
+      }
 
+    private String getImagePath(Uri uri){
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        String document_id = cursor.getString(0);
+        document_id = document_id.substring(document_id.lastIndexOf(":")+1);
+        cursor.close();
+
+        cursor = getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+        cursor.close();
+
+        return path;
     }
-
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        currentImageByteArray=null;
         switch(requestCode){
 
-            case SELECT_PHOTO:{
+            case CreateNoteDialog.SELECT_PHOTO_CREATE:{
+                CreateNoteDialog.createImagePath=null;
                 Uri selectedImage = data.getData();
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    currentImageByteArray=stream.toByteArray();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                String filePath=getImagePath(selectedImage);
+                CreateNoteDialog.createImagePath=filePath;
+                Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+                HorizontalScrollView.LayoutParams params=new HorizontalScrollView.LayoutParams(200,200);
+                ImageView testView = new ImageView(getApplicationContext());
+                testView.setLayoutParams(params);
+                testView.setImageBitmap(bitmap);
+                CreateNoteDialog.horView.removeAllViews();
+                CreateNoteDialog.horView.addView(testView);
+            }
+            break;
+            case EditNoteDialog.SELECT_PHOTO_EDIT:{
+                Uri selectedImage = data.getData();
+                String filePath=getImagePath(selectedImage);
+                EditNoteDialog.editImagePath=filePath;
+                Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+                HorizontalScrollView.LayoutParams params=new HorizontalScrollView.LayoutParams(200,200);
+                ImageView testView = new ImageView(getApplicationContext());
+                testView.setLayoutParams(params);
+                testView.setImageBitmap(bitmap);
+                EditNoteDialog.horView.removeAllViews();
+                EditNoteDialog.horView.addView(testView);
             }
             break;
         }

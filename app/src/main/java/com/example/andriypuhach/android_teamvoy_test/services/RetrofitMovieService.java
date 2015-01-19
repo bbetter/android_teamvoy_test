@@ -1,13 +1,8 @@
 package com.example.andriypuhach.android_teamvoy_test.services;
 
-import android.media.ImageReader;
-
 import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
-import com.example.andriypuhach.android_teamvoy_test.models.MovieDetails;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
-
-import java.util.List;
 
 import retrofit.Callback;
 import retrofit.http.GET;
@@ -22,7 +17,7 @@ public interface RetrofitMovieService {
     @GET("/movie/{thing}?api_key="+apiKey)
     public void getMovies(@Path("thing")String thing,@Query("page")int page, Callback<MovieRequestResult> movieRes);
     @GET("/movie/{id}?api_key="+apiKey)
-    public void getDetails(@Path("id")int id,Callback<MovieDetails> det);
+    public void getDetails(@Path("id")int id,Callback<Movie.Details> det);
     @GET("/movie/{id}/images?api_key="+apiKey)
     public void getImagePathes(@Path("id")int id,Callback<ImagesResult> imRes);
     @GET("/search/movie?api_key="+apiKey)
