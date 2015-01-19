@@ -26,7 +26,6 @@ public class MovieListAdapter extends BaseAdapter {
     ArrayList<Movie> movies;
     LayoutInflater inflater;
     ViewHolder holder;
-    ImageLoaderConfiguration configuration;
     DisplayImageOptions options;
 
     public MovieListAdapter(Context cntxt) {
@@ -34,11 +33,7 @@ public class MovieListAdapter extends BaseAdapter {
         inflater = LayoutInflater.from(context);
         options = new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
                 .build();
-        configuration = new ImageLoaderConfiguration.Builder(context).writeDebugLogs().build();
-        ImageLoader.getInstance().init(configuration);
     }
 
     public void setMovies(ArrayList<Movie> mv) {

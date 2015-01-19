@@ -110,10 +110,10 @@ public class DetailsListAdapter extends BaseAdapter {
                 holder.tvHomePage.setText(movie.getDetails().getHomepage());
                 holder.tvReleaseDate.setText(movie.getRelease_date().toLocalDate().toString());
                 holder.tvBudget.setText(formatter.format(movie.getDetails().getBudget()));
-                holder.tvRevenue.setText(formatter.format(movie.getDetails().getBudget()));
+                holder.tvRevenue.setText(formatter.format(movie.getDetails().getRevenue()));
                 holder.tvStatus.setText(movie.getDetails().getStatus());
                 holder.tvGenres.setText(movie.getDetails().getGenresCommaSeparatedList());
-                holder.tvCompanies.setText(movie.getDetails().getCompaniesSimplified());
+                holder.tvCompanies.setText(movie.getDetails().getCompaniesCommaSeparatedList());
                 break;
             case VIEW_TYPE_NOTES:
                 //listview in listview stuff,have to predict row height
