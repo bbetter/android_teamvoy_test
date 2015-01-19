@@ -47,12 +47,13 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     private final String COMPANIES_COLUMN="companies";
     private final String IMAGES_COLUMN="images";
     private final String VOTE_AVERAGE_COLUMN="voteAverage";
+    private final String OVERVIEW_COLUMN="overview";
 
     private final String [] MOVIE_COLUMNS={MOVIE_ID_COLUMN,
             ORIGINAL_TITLE_COLUMN,TITLE_COLUMN,POSTER_PATH_COLUMN,
             RELEASE_DATE_COLUMN,BUDGET_COLUMN,REVENUE_COLUMN,
             HOMEPAGE_COLUMN,POPULARITY_COLUMN,STATUS_COLUMN,
-            GENRES_COLUMN,COMPANIES_COLUMN,IMAGES_COLUMN,VOTE_AVERAGE_COLUMN};
+            GENRES_COLUMN,COMPANIES_COLUMN,IMAGES_COLUMN,VOTE_AVERAGE_COLUMN,OVERVIEW_COLUMN};
     //endregion
 
     //region Favorites Columns
@@ -93,7 +94,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 +GENRES_COLUMN+" text,"
                 +COMPANIES_COLUMN+" text,"
                 +IMAGES_COLUMN+" text,"
-                +VOTE_AVERAGE_COLUMN+" double");
+                +VOTE_AVERAGE_COLUMN+" double,"
+                +OVERVIEW_COLUMN+" text");
 
         String noteTableCreateQuery=CREATE_TABLE_QUERY
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
@@ -134,7 +136,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 quotate(movie.getDetails().getGenresCommaSeparatedList()),
                 quotate(movie.getDetails().getCompaniesCommaSeparatedList()),
                 movie.getDetails().getImagePathes()!=null?quotate(movie.getDetails().getImagesCommaSeparatedList()):null,
-                String.valueOf(movie.getVote_average())
+                String.valueOf(movie.getVote_average()),
+                quotate(movie.getDetails().getOverview())
 };
         String [] noteValues ={String.valueOf(movie.getId()),
                 quotate(note.getNoteTitle()),
@@ -250,6 +253,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             details.setGenresSimplified(genresSeparatedByCommas);
             details.setCompaniesSimplified(companiesSeparatedByCommas);
             details.setImagePathes(imagePathesList);
+            details.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW_COLUMN)));
             film.setDetails(details);
             movies.add(film);
         }
