@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
@@ -86,6 +87,7 @@ public class DetailsActivity extends Activity {
                     detailsListAdapter.setMovie(movie);
                     detailsListView.setVisibility(View.INVISIBLE);
                     detailsListView.setVisibility(View.VISIBLE);
+                    Toast.makeText(getApplicationContext(),"Нотатку відредаговано",Toast.LENGTH_SHORT).show();
                 }
             });
             edd.setEditedNote(selectedNote);
@@ -113,6 +115,7 @@ public class DetailsActivity extends Activity {
                     detailsListAdapter.setMovie(movie);
                     detailsListView.invalidateViews();
                     detailsListView.scrollBy(0,0);
+                    Toast.makeText(getApplicationContext(),"Нотатку додано",Toast.LENGTH_SHORT).show();
                 }
             });
             cdd.show();
@@ -166,35 +169,41 @@ public class DetailsActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode){
+        if(resultCode==RESULT_CANCELED){
 
-            case CreateNoteDialog.SELECT_PHOTO_CREATE:{
-                CreateNoteDialog.createImagePath=null;
-                Uri selectedImage = data.getData();
-                String filePath=getImagePath(selectedImage);
-                CreateNoteDialog.createImagePath=filePath;
-                Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                HorizontalScrollView.LayoutParams params=new HorizontalScrollView.LayoutParams(200,200);
-                ImageView testView = new ImageView(getApplicationContext());
-                testView.setLayoutParams(params);
-                testView.setImageBitmap(bitmap);
-                CreateNoteDialog.horView.removeAllViews();
-                CreateNoteDialog.horView.addView(testView);
+        }
+        else
+        if(data!=null) {
+            switch (requestCode) {
+
+                case CreateNoteDialog.SELECT_PHOTO_CREATE: {
+                    CreateNoteDialog.createImagePath = null;
+                    Uri selectedImage = data.getData();
+                    String filePath = getImagePath(selectedImage);
+                    CreateNoteDialog.createImagePath = filePath;
+                    Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+                    HorizontalScrollView.LayoutParams params = new HorizontalScrollView.LayoutParams(200, 200);
+                    ImageView testView = new ImageView(getApplicationContext());
+                    testView.setLayoutParams(params);
+                    testView.setImageBitmap(bitmap);
+                    CreateNoteDialog.horView.removeAllViews();
+                    CreateNoteDialog.horView.addView(testView);
+                }
+                break;
+                case EditNoteDialog.SELECT_PHOTO_EDIT: {
+                    Uri selectedImage = data.getData();
+                    String filePath = getImagePath(selectedImage);
+                    EditNoteDialog.editImagePath = filePath;
+                    Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+                    HorizontalScrollView.LayoutParams params = new HorizontalScrollView.LayoutParams(200, 200);
+                    ImageView testView = new ImageView(getApplicationContext());
+                    testView.setLayoutParams(params);
+                    testView.setImageBitmap(bitmap);
+                    EditNoteDialog.horView.removeAllViews();
+                    EditNoteDialog.horView.addView(testView);
+                }
+                break;
             }
-            break;
-            case EditNoteDialog.SELECT_PHOTO_EDIT:{
-                Uri selectedImage = data.getData();
-                String filePath=getImagePath(selectedImage);
-                EditNoteDialog.editImagePath=filePath;
-                Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                HorizontalScrollView.LayoutParams params=new HorizontalScrollView.LayoutParams(200,200);
-                ImageView testView = new ImageView(getApplicationContext());
-                testView.setLayoutParams(params);
-                testView.setImageBitmap(bitmap);
-                EditNoteDialog.horView.removeAllViews();
-                EditNoteDialog.horView.addView(testView);
-            }
-            break;
         }
     }
 

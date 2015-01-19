@@ -34,6 +34,7 @@ public class MovieListAdapter extends BaseAdapter {
         options = new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
                 .build();
+        ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context));
     }
 
     public void setMovies(ArrayList<Movie> mv) {
