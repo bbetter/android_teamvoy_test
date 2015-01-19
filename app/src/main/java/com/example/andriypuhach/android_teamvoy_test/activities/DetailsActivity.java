@@ -181,13 +181,9 @@ public class DetailsActivity extends Activity {
                     Uri selectedImage = data.getData();
                     String filePath = getImagePath(selectedImage);
                     CreateNoteDialog.createImagePath = filePath;
+                    //todo: perhapse use imageloader
                     Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                    HorizontalScrollView.LayoutParams params = new HorizontalScrollView.LayoutParams(200, 200);
-                    ImageView testView = new ImageView(getApplicationContext());
-                    testView.setLayoutParams(params);
-                    testView.setImageBitmap(bitmap);
-                    CreateNoteDialog.horView.removeAllViews();
-                    CreateNoteDialog.horView.addView(testView);
+                    CreateNoteDialog.imageView.setImageBitmap(bitmap);
                 }
                 break;
                 case EditNoteDialog.SELECT_PHOTO_EDIT: {
@@ -195,12 +191,7 @@ public class DetailsActivity extends Activity {
                     String filePath = getImagePath(selectedImage);
                     EditNoteDialog.editImagePath = filePath;
                     Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                    HorizontalScrollView.LayoutParams params = new HorizontalScrollView.LayoutParams(200, 200);
-                    ImageView testView = new ImageView(getApplicationContext());
-                    testView.setLayoutParams(params);
-                    testView.setImageBitmap(bitmap);
-                    EditNoteDialog.horView.removeAllViews();
-                    EditNoteDialog.horView.addView(testView);
+                    EditNoteDialog.imageView.setImageBitmap(bitmap);
                 }
                 break;
             }

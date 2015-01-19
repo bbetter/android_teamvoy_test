@@ -28,9 +28,7 @@
         <Button
             android:text="Завантажити зображення"
             android:id="@+id/uploadPhotoBtn"/>
-        <HorizontalScrollView android:id="@+id/imagesHolder">
-
-        </HorizontalScrollView>
+        <ImageView  android:id="@+id/uploadedImage" android:layout_height="300dp" android:layout_width="300dp"/>
         <Button
             android:text="Підтвердити"
             android:id="@+id/submitNoteBtn"/>

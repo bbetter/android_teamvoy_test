@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 
@@ -226,7 +227,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
 
     public List<Movie> searchByNote(String title){
         String query= "select * from Movies mv join Notes nt on mv."+MOVIE_ID_COLUMN+"="+"nt."+NOTE_MOVIE_ID_COLUMN+" where nt."+NOTE_TITLE_COLUMN
-                +" like '%"+title+"%'";
+                +" like '%"+ title.replace("%20"," ")+"%'";
         List<Movie> movies = new ArrayList<>();
         Cursor cursor=getReadableDatabase().rawQuery(query,null);
         while(cursor.moveToNext()){

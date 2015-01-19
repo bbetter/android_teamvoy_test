@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
@@ -18,7 +19,7 @@ import com.example.andriypuhach.android_teamvoy_test.models.Movie;
  */
 public class CreateNoteDialog extends Dialog {
     public final static int SELECT_PHOTO_CREATE=100;
-    public static HorizontalScrollView horView;
+    public static ImageView imageView;
     public static String createImagePath=null;
     private Activity activity;
     private Movie movie;
@@ -35,7 +36,7 @@ public class CreateNoteDialog extends Dialog {
         setContentView(R.layout.create_note_dialog);
         final EditText noteTitle=(EditText)findViewById(R.id.noteTitleEdit);
         final EditText noteText =(EditText)findViewById(R.id.noteTextEdit);
-        horView=(HorizontalScrollView)findViewById(R.id.imagesHolder);
+        imageView=(ImageView)findViewById(R.id.uploadedImage);
         Button uploadButton = (Button)findViewById(R.id.uploadPhotoBtn);
         Button submitButton = (Button)findViewById(R.id.submitNoteBtn);
 
@@ -58,7 +59,7 @@ public class CreateNoteDialog extends Dialog {
                 newNote.setNoteTitle(title);
                 newNote.setImagePath(createImagePath);
                 MovieDatabaseHelper dbHelper= new MovieDatabaseHelper(activity);
-                dbHelper.insertNote(movie,newNote);
+                dbHelper.insertNote(movie, newNote);
                 dismiss();
             }
         });

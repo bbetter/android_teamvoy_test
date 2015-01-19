@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * Created by andriypuhach on 1/16/15.
@@ -25,7 +26,7 @@ public class EditNoteDialog extends Dialog {
 
     public final static int SELECT_PHOTO_EDIT=200;
     public static String editImagePath;
-    public static HorizontalScrollView horView;
+    public static ImageView imageView;
 
     public EditNoteDialog(Activity activity){
         super(activity);
@@ -41,19 +42,13 @@ public class EditNoteDialog extends Dialog {
         setContentView(R.layout.edit_note_dialog);
         final EditText noteTitle=(EditText)findViewById(R.id.noteTitleEdit);
         final EditText noteText =(EditText)findViewById(R.id.noteTextEdit);
-        horView=(HorizontalScrollView)findViewById(R.id.imagesHolder);
         Button uploadButton = (Button)findViewById(R.id.uploadPhotoBtn);
         Button submitButton = (Button)findViewById(R.id.submitNoteBtn);
+        imageView = (ImageView)findViewById(R.id.uploadedImage);
         noteTitle.setText(editedNote.getNoteTitle());
         noteText.setText(editedNote.getNoteText());
         editImagePath=editedNote.getImagePath();
-        Bitmap bitmap = BitmapFactory.decodeFile(editImagePath);
-        HorizontalScrollView.LayoutParams params=new HorizontalScrollView.LayoutParams(200,200);
-        ImageView testView = new ImageView(activity.getApplicationContext());
-        testView.setLayoutParams(params);
-        testView.setImageBitmap(bitmap);
-        EditNoteDialog.horView.removeAllViews();
-        EditNoteDialog.horView.addView(testView);
+        ImageLoader.getInstance().displayImage("file:///"+editImagePath,imageView);
 
 
         uploadButton.setOnClickListener(new View.OnClickListener() {
