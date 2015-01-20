@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -15,6 +16,7 @@ import android.widget.ViewFlipper;
 import com.example.andriypuhach.android_teamvoy_test.CustomScrollView;
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.WorkaroundMapFragment;
 import com.example.andriypuhach.android_teamvoy_test.models.Account;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,7 +32,7 @@ import java.util.List;
 /**
  * Created by andriypuhach on 1/19/15.
  */
-public class AccountActivity extends Activity {
+public class AccountActivity extends FragmentActivity {
     private GoogleMap googleMap;
     private float lastX;
     private ViewFlipper fbPhotoFlipper;
@@ -95,9 +97,19 @@ public class AccountActivity extends Activity {
         new AccountLoader().execute();
     }
     private void initilizeMap() {
+        final ScrollView scView=(ScrollView)findViewById(R.id.scrollView);
         if (googleMap == null) {
-            googleMap = ((MapFragment)getFragmentManager().findFragmentById(
+            googleMap = ((WorkaroundMapFragment)getSupportFragmentManager().findFragmentById(
                     R.id.map)).getMap();
+
+            ((WorkaroundMapFragment)getSupportFragmentManager().findFragmentById(
+                    R.id.map)).setListener(new WorkaroundMapFragment.OnTouchListener(){
+
+                @Override
+                public void onTouch() {
+                    scView.requestDisallowInterceptTouchEvent(true);
+                }
+            });
 
             googleMap.clear();
             googleMap.setMyLocationEnabled(true);
