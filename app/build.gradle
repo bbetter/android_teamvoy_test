@@ -28,4 +28,5 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:+'
     compile 'com.squareup.okhttp:okhttp-urlconnection:+'
     compile 'com.facebook.android:facebook-android-sdk:+'
+    compile 'com.google.android.gms:play-services-maps:6.5.87'
 }

@@ -7,10 +7,11 @@
     <com.facebook.widget.LoginButton
         android:id="@+id/fb_login_button"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginTop="5dp"
         facebook:confirm_logout="false"
-        facebook:fetch_user_info="true" />
+        facebook:fetch_user_info="true"
+        android:layout_marginBottom="5dp" />
     <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,7 +22,7 @@
     <Spinner
         android:id="@+id/searchTypeSpinner"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="40dp">
 
 
     </Spinner>

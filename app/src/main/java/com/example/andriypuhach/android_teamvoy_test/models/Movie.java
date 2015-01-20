@@ -266,11 +266,13 @@ public class Movie implements Serializable {
                 for (Genre g : genres) {
                     genreStrings.add(g.getName());
                 }
+                if(genreStrings.size()!=0)
                 return Joiner.join(genreStrings, ',');
             }
             else{
                 return getGenresSimplified();
             }
+            return "";
         }
 
         public String getCompaniesCommaSeparatedList(){
@@ -279,12 +281,13 @@ public class Movie implements Serializable {
                 for (Company c : production_companies) {
                     companyStrings.add(c.getName());
                 }
-
+                if(companyStrings.size()!=0)
                 return Joiner.join(companyStrings, ',');
             }
             else{
                 return getCompaniesSimplified();
             }
+            return "";
         }
         public String getImagesCommaSeparatedList(){
            return Joiner.join(imagePathes,',');

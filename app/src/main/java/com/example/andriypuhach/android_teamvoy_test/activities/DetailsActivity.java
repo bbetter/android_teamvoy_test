@@ -133,7 +133,6 @@ public class DetailsActivity extends Activity {
         movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
         viewFlipper = (ViewFlipper)findViewById(R.id.viewFlipper);
         viewFlipper.removeAllViews();
-
         List<String> lPathes=movie.getDetails().getImagePathes();
         String [] iPathes=new String[lPathes.size()];
         lPathes.toArray(iPathes);
@@ -180,18 +179,15 @@ public class DetailsActivity extends Activity {
                     CreateNoteDialog.createImagePath = null;
                     Uri selectedImage = data.getData();
                     String filePath = getImagePath(selectedImage);
-                    CreateNoteDialog.createImagePath = filePath;
-                    //todo: perhapse use imageloader
-                    Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                    CreateNoteDialog.imageView.setImageBitmap(bitmap);
+                    CreateNoteDialog.createImagePath=filePath;
+                    ImageLoader.getInstance().displayImage("file:///"+filePath,CreateNoteDialog.imageView);
                 }
                 break;
                 case EditNoteDialog.SELECT_PHOTO_EDIT: {
                     Uri selectedImage = data.getData();
                     String filePath = getImagePath(selectedImage);
                     EditNoteDialog.editImagePath = filePath;
-                    Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-                    EditNoteDialog.imageView.setImageBitmap(bitmap);
+                    ImageLoader.getInstance().displayImage("file:///"+filePath,EditNoteDialog.imageView);
                 }
                 break;
             }

@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
@@ -34,6 +35,7 @@ public class CreateNoteDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_note_dialog);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         final EditText noteTitle=(EditText)findViewById(R.id.noteTitleEdit);
         final EditText noteText =(EditText)findViewById(R.id.noteTextEdit);
         imageView=(ImageView)findViewById(R.id.uploadedImage);

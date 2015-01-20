@@ -1,7 +1,10 @@
 package com.example.andriypuhach.android_teamvoy_test.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,8 +26,8 @@ import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
-import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
@@ -38,6 +41,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit.Callback;
@@ -73,6 +77,13 @@ public class MainActivity extends Activity {
     private Movie selectedMovie = null;
     private View header;
     private LoginButton btn;
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnected();
+    }
     View createHeader() {
         View v = getLayoutInflater().inflate(R.layout.header, null);
         v.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
@@ -164,9 +175,11 @@ public class MainActivity extends Activity {
     }
     void refreshListBySearch(String search) {
         if(currentSearchType=="Звичайний пошук") {
+
             RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
                 @Override
                 public void success(MovieRequestResult result, Response response) {
+                    listView.setVisibility(View.VISIBLE);
                     if (result.getResults() != null) {
                         currentSearchPage = result.getPage();
                         totalPages = result.getTotal_pages();
@@ -181,17 +194,15 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void failure(RetrofitError error) {
-                    currentSearchPage = 0;
-                    totalPages = 0;
-                    listAdapter.setMovies(new ArrayList<Movie>());
-                    ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
-                    if (listView.getHeaderViewsCount() == 0)
-                        listView.addHeaderView(header);
-                    listView.setAdapter(listAdapter);
+                    if (!isOnline()) {
+                        Toast.makeText(getApplicationContext(), "Connection trouble. Please reconnect to the Internet", Toast.LENGTH_SHORT).show();
+                        listView.setVisibility(View.GONE);
+                    }
                 }
             });
         }
         else{
+            listView.setVisibility(View.GONE);
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
             List<Movie> result=dbHelper.searchByNote(search);
             totalPages = (result.size() < 20) ? 1 : (int) Math.ceil((double) result.size() / 20.0);
@@ -269,23 +280,29 @@ public class MainActivity extends Activity {
                 currentPage=currentPopularPage;
                 break;
         }
+
         RestClient.getApi().getMovies(currentTask, currentPage, new Callback<MovieRequestResult>() {
             @Override
             public void success(MovieRequestResult movieRequestResult, Response response) {
+                listView.setVisibility(View.VISIBLE);
                 if (movieRequestResult.getResults() != null) {
-                    int cp=movieRequestResult.getPage();
+                    int cp = movieRequestResult.getPage();
                     totalPages = movieRequestResult.getTotal_pages();
                     listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
                     if (listView.getHeaderViewsCount() == 0)
                         listView.addHeaderView(header);
-                    ((TextView)header.findViewById(R.id.currentPageView)).setText(cp +" of "+totalPages);
+                    ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
                     listView.setAdapter(listAdapter);
                 }
             }
 
             @Override
             public void failure(RetrofitError error) {
-                Toast.makeText(getApplicationContext(), "trouble", Toast.LENGTH_LONG);
+                if (!isOnline()) {
+                    Toast.makeText(getApplicationContext(), "Connection trouble. Please reconnect to the Internet", Toast.LENGTH_LONG).show();
+                    listView.setVisibility(View.GONE);
+                }
+
             }
         });
     }
@@ -367,6 +384,7 @@ public class MainActivity extends Activity {
     //endregion
     //region favorites
     public void refreshFavorites() {
+      listView.setVisibility(View.VISIBLE);
       Movie.refreshFavorites();
         if (Movie.favorites!= null) {
             totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
@@ -385,6 +403,23 @@ public class MainActivity extends Activity {
         }
     }
     //endregion
+    //region optionsMenu
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.account_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.openAccount){
+           startActivity(new Intent(MainActivity.this,AccountActivity.class));
+        }
+        return true;
+    }
+
+    //endregion
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -394,11 +429,12 @@ public class MainActivity extends Activity {
         listAdapter = new MovieListAdapter(getApplicationContext());
         header = createHeader();
         btn=(LoginButton)findViewById(R.id.fb_login_button);
+        btn.setReadPermissions(Arrays.asList("public_profile","user_status","user_birthday","user_about_me","user_relationships"));
         btn.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override
             public void onUserInfoFetched(GraphUser graphUser) {
                 if (graphUser != null) {
-                    setTitle("Movie info welcomes you " + graphUser.getName());
+                    setTitle("Welcome, " + graphUser.getName());
                 } else {
                     setTitle("Movie info welcomes you");
                 }
@@ -409,14 +445,16 @@ public class MainActivity extends Activity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    if (searchView.getText().toString().equals("")) {
-                        currentTask = tabs.getCurrentTabTag();
-                        refreshListByTab();
-                    } else {
-                        currentTask = "search";
-                        refreshListBySearch(Uri.encode(searchView.getText().toString()));
+                    if (isOnline()) {
+                        if (searchView.getText().toString().equals("")) {
+                            currentTask = tabs.getCurrentTabTag();
+                            refreshListByTab();
+                        } else {
+                            currentTask = "search";
+                            refreshListBySearch(Uri.encode(searchView.getText().toString()));
+                        }
+                        return true;
                     }
-                    return true;
                 }
                 return false;
             }

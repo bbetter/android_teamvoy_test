@@ -15,6 +15,7 @@ import com.example.andriypuhach.android_teamvoy_test.models.*;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
 
 import org.joda.time.DateTime;
@@ -32,7 +33,12 @@ public class MovieListAdapter extends BaseAdapter {
         context = cntxt;
         inflater = LayoutInflater.from(context);
         options = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
                 .cacheOnDisk(true)
+                .showImageOnFail(R.drawable.failed_to_load)
+                .imageScaleType(ImageScaleType.EXACTLY)
+                .bitmapConfig(Bitmap.Config.ARGB_8888)
+                .resetViewBeforeLoading(true)
                 .build();
         ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context));
     }
