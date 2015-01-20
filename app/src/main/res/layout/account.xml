@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
@@ -12,7 +13,7 @@
         <LinearLayout android:layout_height="wrap_content"
                       android:layout_width="fill_parent"
                       android:orientation="vertical">
-       <ViewFlipper
+            <ViewFlipper
             android:id="@+id/fbPhotoFlipper"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
@@ -142,15 +143,29 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="5" />
                 </TableRow>
+                <TableRow>
+                    <TextView
+                        android:text="А зараз ви де?"
+                        android:singleLine="false"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="2" />
+
+                    <TextView
+                        android:id="@+id/tvPlace"
+                        android:layout_column="1"
+                        android:text=""
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="5" />
+                </TableRow>
             </TableLayout>
             <fragment
                 android:id="@+id/map"
                 android:name="com.example.andriypuhach.android_teamvoy_test.WorkaroundMapFragment"
                 android:layout_width="fill_parent"
-                android:layout_height="300dp" />
+                android:layout_height="300dp"/>
         </LinearLayout>
-
-
     </ScrollView>
 </LinearLayout>
 
