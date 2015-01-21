@@ -488,7 +488,7 @@ public class MainActivity extends Activity {
         tabs.setCurrentTab(0);
 
         Spinner spinner =(Spinner) findViewById(R.id.searchTypeSpinner);
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("Звичайний пошук");
         list.add("За нотатками");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>

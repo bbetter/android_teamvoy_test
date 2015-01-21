@@ -27,20 +27,7 @@ import retrofit.converter.GsonConverter;
 public class RestClient {
     private static final String BASE_URL="https://api.themoviedb.org/3";
     private static RetrofitMovieService  api;
-    private static class DateTimeTypeConverter implements JsonDeserializer<DateTime>
-    {
-        @Override
-        public DateTime deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException{
-            try {
-                if (json.getAsString()=="") return DateTime.now();
-                DateTime joda = new DateTime(json.getAsString());
-                return joda;
-            } catch (IllegalArgumentException e) {
-                Date date = context.deserialize(json, Date.class);
-                return new DateTime(date);
-            }
-        }
-    }
+
     static{
         OkHttpClient ok = new OkHttpClient();
         ok.setConnectTimeout(60, TimeUnit.SECONDS);
@@ -59,5 +46,23 @@ public class RestClient {
     }
     public static RetrofitMovieService getApi(){
         return api;
+    }
+
+    /**
+     * Created by andriypuhach on 1/21/15.
+     */
+    public static class DateTimeTypeConverter implements JsonDeserializer<DateTime>
+    {
+        @Override
+        public DateTime deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+            try {
+                if (json.getAsString()=="") return DateTime.now();
+                DateTime joda = new DateTime(json.getAsString());
+                return joda;
+            } catch (IllegalArgumentException e) {
+                Date date = context.deserialize(json, Date.class);
+                return new DateTime(date);
+            }
+        }
     }
 }

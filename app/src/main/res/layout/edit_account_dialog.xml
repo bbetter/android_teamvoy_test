@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView android:layout_weight="1" android:text="Ім'я"/>
+                <EditText android:layout_weight="5" android:singleLine="true" android:id="@+id/accountEditName" android:text=""/>
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView android:layout_height="wrap_content"  android:layout_weight="1" android:text="Прізвище"/>
+                <EditText android:layout_weight="5" android:singleLine="true" android:id="@+id/accountEditSurname" android:text="" android:imeOptions="actionNext"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="100dp">
+                <TextView android:layout_weight="1" android:singleLine="false" android:text="Статус"/>
+                <Spinner android:layout_weight="5" android:singleLine="true" android:id="@+id/accountEditStatus" android:text="" android:imeOptions="actionNext"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView android:layout_weight="1" android:text="Про мене"/>
+                <EditText android:singleLine="false" android:layout_weight="5" android:id="@+id/accountEditAboutMe" android:text="" android:imeOptions="actionDone"/>
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <TextView android:layout_weight="1" android:text="День народження"/>
+                <DatePicker android:calendarViewShown="false" android:layout_weight="5" android:startYear="1900" android:endYear="2015" android:id="@+id/accountBirthday" android:text=""/>
+            </TableRow>
+            <Button android:id="@+id/submitEditAccount" android:text="Підтвердити"/>
+            <Button android:id="@+id/cancelEditAccount" android:text="Скасувати"/>
+        </TableLayout>
+        </ScrollView>
+
+</LinearLayout>

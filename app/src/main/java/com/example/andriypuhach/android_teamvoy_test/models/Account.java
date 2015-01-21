@@ -14,7 +14,7 @@ public class Account {
 
     private String name;
     private String surname;
-    private int age;
+
     private Location location;
     private DateTime birthday;
     private String about;
@@ -76,14 +76,6 @@ public class Account {
 
     public void setSurname(String surname) {
         this.surname = surname;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
     }
 
     public Location getLocation() {

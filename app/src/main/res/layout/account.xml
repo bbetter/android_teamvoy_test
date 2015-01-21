@@ -5,7 +5,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
-
+    <ViewFlipper
+        android:id="@+id/fbPhotoFlipper"
+        android:layout_width="fill_parent"
+        android:layout_height="150dp">
+    </ViewFlipper>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
@@ -13,11 +17,6 @@
         <LinearLayout android:layout_height="wrap_content"
                       android:layout_width="fill_parent"
                       android:orientation="vertical">
-            <ViewFlipper
-            android:id="@+id/fbPhotoFlipper"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-        </ViewFlipper>
             <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -89,16 +88,16 @@
                     android:layout_height="wrap_content">
 
                     <TextView
-                        android:text="Вік"
+                        android:text="День народження"
                         android:singleLine="false"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2" />
 
                     <TextView
-                        android:id="@+id/tvAge"
+                        android:id="@+id/tvBirthday"
                         android:layout_column="1"
-                        android:text="2014"
+                        android:text="13.06.1995"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="5" />
@@ -163,8 +162,8 @@
             <fragment
                 android:id="@+id/map"
                 android:name="com.example.andriypuhach.android_teamvoy_test.WorkaroundMapFragment"
-                android:layout_width="fill_parent"
-                android:layout_height="300dp"/>
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

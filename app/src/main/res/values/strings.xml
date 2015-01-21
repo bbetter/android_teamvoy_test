@@ -22,4 +22,11 @@
         <item android:id="@+id/usual">Звичайний</item>
         <item android:id="@+id/bynotes">За нотатками</item>
     </string-array>
+    <string-array name="sp_status">
+        <item android:id="@+id/single">Single</item>
+        <item android:id="@+id/dating">Dating</item>
+        <item android:id="@+id/inSearch">In Search</item>
+        <item android:id="@+id/engaged">Engaged</item>
+        <item android:id="@+id/married">Married</item>
+    </string-array>
 </resources>

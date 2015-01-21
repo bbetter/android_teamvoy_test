@@ -112,8 +112,7 @@ public class FacebookManager {
                             account.setName(response.getGraphObject().getProperty("first_name").toString());
                             account.setSurname(response.getGraphObject().getProperty("last_name").toString());
                             account.setRelationships(response.getGraphObject().getProperty("relationship_status").toString());
-                            account.setAge(DateTime.now().getYear()-
-                                    DateTime.parse(response.getGraphObject().getProperty("birthday").toString(),DateTimeFormat.forPattern("MM/dd/yyyy")).getYear());
+                            account.setBirthday(DateTime.parse(response.getGraphObject().getProperty("birthday").toString(),DateTimeFormat.forPattern("MM/dd/yyyy")));
                             JSONArray array=(JSONArray)response.getGraphObject().getProperty("work");
                             List<Account.Work> works=new ArrayList<>();
                             try {
