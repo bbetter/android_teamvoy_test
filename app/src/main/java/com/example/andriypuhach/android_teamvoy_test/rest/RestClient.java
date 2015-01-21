@@ -26,6 +26,8 @@ import retrofit.converter.GsonConverter;
 
 public class RestClient {
     private static final String BASE_URL="https://api.themoviedb.org/3";
+    public static String requestToken="";
+    public static String sessionId="";
     private static RetrofitMovieService  api;
 
     static{

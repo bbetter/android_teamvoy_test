@@ -26,7 +26,6 @@ import com.example.andriypuhach.android_teamvoy_test.Serializer;
 import com.example.andriypuhach.android_teamvoy_test.WorkaroundMapFragment;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditAccountDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.Account;
-import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.facebook.Session;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

@@ -32,13 +32,17 @@ import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
+import com.example.andriypuhach.android_teamvoy_test.services.RetrofitMovieService;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
+import com.google.gson.JsonElement;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -419,6 +423,44 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    public boolean authenticate() {
+        final Boolean flag=true;
+        RestClient.getApi().getToken(new Callback<JsonElement>() {
+            @Override
+            public void success(JsonElement element, Response response) {
+                RestClient.requestToken=element.getAsJsonObject().get("request_token").toString();
+                RestClient.getApi().validateToken(RestClient.requestToken, "bbetter", "themoviepass", new Callback<JsonElement>() {
+                    @Override
+                    public void success(JsonElement jsonElement, Response response) {
+                        if(jsonElement.getAsJsonObject().get("success").toString().equals("true")){
+                            RestClient.getApi().getNewSession(RestClient.requestToken,new Callback<JsonElement>() {
+                                @Override
+                                public void success(JsonElement jsonElement, Response response) {
+                                    RestClient.sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
+                                }
+
+                                @Override
+                                public void failure(RetrofitError error) {
+                                   // flag
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+        return true;
+    }
     //endregion
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -428,6 +470,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
         listAdapter = new MovieListAdapter(getApplicationContext());
         header = createHeader();
+
+
         btn=(LoginButton)findViewById(R.id.fb_login_button);
         btn.setReadPermissions(Arrays.asList("public_profile","user_status","user_birthday","user_about_me","user_relationships"));
         btn.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
