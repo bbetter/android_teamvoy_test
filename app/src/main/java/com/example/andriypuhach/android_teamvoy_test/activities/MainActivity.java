@@ -1,12 +1,16 @@
 package com.example.andriypuhach.android_teamvoy_test.activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -16,8 +20,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TabHost;
@@ -27,8 +33,8 @@ import android.widget.Toast;
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.TheMovieDBAccount;
 import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
-import com.example.andriypuhach.android_teamvoy_test.models.ImagesResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
@@ -38,12 +44,17 @@ import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +64,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class MainActivity extends Activity {
+    int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
     TabHost tabs;
     private UiLifecycleHelper uiHelper;
     private String currentSearchType="";
@@ -71,6 +83,7 @@ public class MainActivity extends Activity {
     private int currentUpcomingPage = 1;
     private int currentTopRatedPage = 1;
     private int currentFavoritePage = 1;
+    private int currentWatchListPage=1;
     private int currentSearchPage = 1;
 
     private String currentTask = "popular";
@@ -81,6 +94,8 @@ public class MainActivity extends Activity {
     private Movie selectedMovie = null;
     private View header;
     private LoginButton btn;
+    private Button tmbdBtn;
+    private boolean tmbdConnected=false;
 
     public boolean isOnline() {
         ConnectivityManager cm =
@@ -117,6 +132,11 @@ public class MainActivity extends Activity {
                             return ;
                         }
                         break;
+                    case "watchlist":
+                        if(currentWatchListPage<totalPages){
+                            currentWatchListPage++;
+                            refreshWatchList();
+                        }
                     case "search":
                         if(currentSearchPage<totalPages){
                             currentSearchPage++;
@@ -165,6 +185,11 @@ public class MainActivity extends Activity {
                             currentSearchPage--;
                             refreshListBySearch(Uri.encode(searchView.getText().toString()));
                             return;
+                        }
+                    case "watchlist":
+                        if(currentWatchListPage>1){
+                            currentWatchListPage--;
+                            refreshWatchList();
                         }
                     default:
                         if(currentPopularPage>1){
@@ -229,10 +254,16 @@ public class MainActivity extends Activity {
                 RestClient.getApi().getDetails(movie.getId(), new Callback<Movie.Details>() {
                     @Override
                     public void success(final Movie.Details details, Response response) {
-                        RestClient.getApi().getImagePathes(movie.getId(), new Callback<ImagesResult>() {
+                        RestClient.getApi().getImagePathes(movie.getId(), new Callback<JsonElement>() {
                             @Override
-                            public void success(ImagesResult imagesResult, Response response) {
-                                details.setImagePathes(imagesResult.getBackdropPathes());
+                            public void success(JsonElement imagesResult, Response response) {
+                                JsonArray array=imagesResult.getAsJsonObject().getAsJsonArray("backdrops");
+                                List<String> backdrops= new ArrayList<>();
+                                for(int i=0;i<array.size();++i){
+                                    String path=array.get(i).getAsJsonObject().get("file_path").getAsString();
+                                    backdrops.add(path);
+                                }
+                                details.setImagePathes(backdrops);
                                 movie.setDetails(details);
                                 intent.putExtra("Movie", movie);
                                 startActivity(intent);
@@ -240,7 +271,7 @@ public class MainActivity extends Activity {
 
                             @Override
                             public void failure(RetrofitError error) {
-                                Toast.makeText(getApplicationContext(), "have some troubles with ths movie try another one", Toast.LENGTH_LONG);
+                                Toast.makeText(getApplicationContext(), "have some troubles with ths movie try another one", Toast.LENGTH_LONG).show();
                             }
                         });
 
@@ -264,13 +295,40 @@ public class MainActivity extends Activity {
         public void onTabChanged(String tabId) {
             currentTask = tabId;
             if (!currentTask.equals("favorite")) {
-                refreshListByTab();
+                if(!currentTask.equals("watchlist")) {
+                    refreshListByTab();
+                }
+                else{
+
+                    refreshWatchList();
+                }
             } else {
                 refreshFavorites();
             }
         }
     };
+    void refreshWatchList(){
+        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,new Callback<MovieRequestResult>() {
+            @Override
+            public void success(MovieRequestResult movieRequestResult, Response response) {
+                listView.setVisibility(View.VISIBLE);
+                if (movieRequestResult.getResults() != null) {
+                    int cp = movieRequestResult.getPage();
+                    totalPages = movieRequestResult.getTotal_pages();
+                    listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
+                    if (listView.getHeaderViewsCount() == 0)
+                        listView.addHeaderView(header);
+                    ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
+                    listView.setAdapter(listAdapter);
+                }
+            }
 
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e("Error",error.getUrl()+"\n"+error.getBody());
+            }
+        });
+    }
     void refreshListByTab() {
         int currentPage=1;
         switch(currentTask){
@@ -280,6 +338,7 @@ public class MainActivity extends Activity {
                 break;
             case "top_rated":currentPage=currentTopRatedPage;
                 break;
+            case "watchlist":currentPage=currentWatchListPage;
             default:
                 currentPage=currentPopularPage;
                 break;
@@ -333,13 +392,45 @@ public class MainActivity extends Activity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getTitle() == "Add To Favorites") {
-            if (!isMovieInList(Movie.favorites, selectedMovie)) {
-                Movie.favorites.add(selectedMovie);
-                Movie.saveFavorites();
-                Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
+            if(!tmbdConnected) {
+                if (!isMovieInList(Movie.favorites, selectedMovie)) {
+                    Movie.favorites.add(selectedMovie);
+                    Movie.saveFavorites();
+                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
+                }
             }
+            else{
+                String entry="{'media_type':'movie','media_id':"+selectedMovie.getId()+",'favorite':true}";
+                JsonObject obj = new Gson().fromJson(entry,JsonObject.class);
+                RestClient.getApi().setFavorite(obj,RestClient.sessionId,new Callback<JsonElement>() {
+                    @Override
+                    public void success(JsonElement jsonElement, Response response) {
+                        Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        Toast.makeText(getApplicationContext(), "Не вдалось додати фільм", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+        else if(item.getTitle()=="Add To Watchlist"){
+            String entry="{'media_type':'movie','media_id':"+selectedMovie.getId()+",'watchlist':true}";
+            JsonObject obj = new Gson().fromJson(entry,JsonObject.class);
+            RestClient.getApi().setWatchlist(obj, RestClient.sessionId, new Callback<JsonElement>() {
+                @Override
+                public void success(JsonElement jsonElement, Response response) {
+                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    Toast.makeText(getApplicationContext(), "Не вдалось додати фільм", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         else if(item.getTitle()=="Share"){
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -352,8 +443,45 @@ public class MainActivity extends Activity {
             startActivity(Intent.createChooser(sharingIntent, "Share via"));
         }
         else if(item.getTitle()=="Delete"){
-            removeById(selectedMovie.getId(),Movie.favorites);
-            Movie.saveFavorites();
+            if(!tmbdConnected) {
+                removeById(selectedMovie.getId(), Movie.favorites);
+                Movie.saveFavorites();
+
+            }
+            else{
+                String entry="";
+                if(currentTask=="watchlist"){
+                    entry = "{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'warchlist':false}";
+                    JsonObject obj = new Gson().fromJson(entry, JsonObject.class);
+                    RestClient.getApi().setWatchlist(obj, RestClient.sessionId, new Callback<JsonElement>() {
+                        @Override
+                        public void success(JsonElement jsonElement, Response response) {
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+                }
+                else {
+                    entry = "{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}";
+                    JsonObject obj = new Gson().fromJson(entry, JsonObject.class);
+                    RestClient.getApi().setFavorite(obj, RestClient.sessionId, new Callback<JsonElement>() {
+                        @Override
+                        public void success(JsonElement jsonElement, Response response) {
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+
+                        }
+                    });
+                }
+
+            }
             refreshFavorites();
             Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
         }
@@ -371,11 +499,17 @@ public class MainActivity extends Activity {
             List<String> listMenuItems= new ArrayList<>();
             listMenuItems.add("Share");
             listMenuItems.add("Add To Favorites");
+            listMenuItems.add("Add To Watchlist");
             if(Session.getActiveSession().isOpened())
                 listMenuItems.add("Post To Facebook");
             if(currentTask=="favorite") {
                 listMenuItems.remove("Share");
                 listMenuItems.remove("Add To Favorites");
+                listMenuItems.add("Delete");
+            }
+            if(currentTask=="watchlist"){
+                listMenuItems.remove("Share");
+                listMenuItems.remove("Add To Watchlist");
                 listMenuItems.add("Delete");
             }
             String [] menuItems=new String[listMenuItems.size()];
@@ -389,22 +523,46 @@ public class MainActivity extends Activity {
     //region favorites
     public void refreshFavorites() {
       listView.setVisibility(View.VISIBLE);
-      Movie.refreshFavorites();
-        if (Movie.favorites!= null) {
-            totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
-            int begin =((currentFavoritePage-1)*20);
-            int end =begin+20;
-            if (Movie.favorites.size()<=end)
-                end=Movie.favorites.size();
-            listAdapter.setMovies(new ArrayList<>(Movie.favorites.subList(begin,end)));
-            ((TextView) header.findViewById(R.id.currentPageView)).setText(currentFavoritePage + " of " + totalPages);
-            if (listView.getHeaderViewsCount() == 0)
-                listView.addHeaderView(header);
-            listView.setAdapter(listAdapter);
-        } else {
-            listAdapter.setMovies(new ArrayList<Movie>());
-            listView.setAdapter(listAdapter);
-        }
+      if(!tmbdConnected) {
+          Movie.refreshFavorites();
+          if (Movie.favorites != null) {
+              totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
+              int begin = ((currentFavoritePage - 1) * 20);
+              int end = begin + 20;
+              if (Movie.favorites.size() <= end)
+                  end = Movie.favorites.size();
+              listAdapter.setMovies(new ArrayList<>(Movie.favorites.subList(begin, end)));
+              ((TextView) header.findViewById(R.id.currentPageView)).setText(currentFavoritePage + " of " + totalPages);
+              if (listView.getHeaderViewsCount() == 0)
+                  listView.addHeaderView(header);
+              listView.setAdapter(listAdapter);
+          } else {
+              listAdapter.setMovies(new ArrayList<Movie>());
+              listView.setAdapter(listAdapter);
+          }
+      }
+      else{
+            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,new Callback<MovieRequestResult>() {
+                @Override
+                public void success(MovieRequestResult movieRequestResult, Response response) {
+                    listView.setVisibility(View.VISIBLE);
+                    if (movieRequestResult.getResults() != null) {
+                        int cp = movieRequestResult.getPage();
+                        totalPages = movieRequestResult.getTotal_pages();
+                        listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
+                        if (listView.getHeaderViewsCount() == 0)
+                            listView.addHeaderView(header);
+                        ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
+                        listView.setAdapter(listAdapter);
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+
+                }
+            });
+      }
     }
     //endregion
     //region optionsMenu
@@ -423,55 +581,68 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    public boolean authenticate() {
-        final Boolean flag=true;
-        RestClient.getApi().getToken(new Callback<JsonElement>() {
-            @Override
-            public void success(JsonElement element, Response response) {
-                RestClient.requestToken=element.getAsJsonObject().get("request_token").toString();
-                RestClient.getApi().validateToken(RestClient.requestToken, "bbetter", "themoviepass", new Callback<JsonElement>() {
-                    @Override
-                    public void success(JsonElement jsonElement, Response response) {
-                        if(jsonElement.getAsJsonObject().get("success").toString().equals("true")){
-                            RestClient.getApi().getNewSession(RestClient.requestToken,new Callback<JsonElement>() {
-                                @Override
-                                public void success(JsonElement jsonElement, Response response) {
-                                    RestClient.sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
-                                }
 
-                                @Override
-                                public void failure(RetrofitError error) {
-                                   // flag
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-        return true;
-    }
     //endregion
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         uiHelper = new UiLifecycleHelper(this, statusCallback);
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        listAdapter = new MovieListAdapter(getApplicationContext());
+        listAdapter = new MovieListAdapter(this);
         header = createHeader();
+        tmbdBtn=(Button)findViewById(R.id.login_tmbd_button);
+        tmbdBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!tmbdConnected)   {
+                    LinearLayout layout = new LinearLayout(getApplicationContext());
+                    layout.setOrientation(LinearLayout.VERTICAL);
+                    final EditText edName=new EditText(getApplicationContext());
+                    edName.setHint("nickname");
+                    final EditText edPass = new EditText(getApplicationContext());
+                    edPass.setHint("password");
+                    edPass.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    edPass.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                    layout.addView(edName);
+                    layout.addView(edPass);
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Login in Tmbd")
+                            .setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                        TheMovieDBAccount.authenticate(getApplicationContext(),edName.getText().toString(),edPass.getText().toString());
+                                        tmbdConnected=true;
+                                    tmbdBtn.setText(getResources().getText(resources[tmbdConnected?1:0]));
+                                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected?View.VISIBLE:View.GONE);
 
+                                    if(currentTask=="watchlist" || currentTask=="favorites") {
+                                        currentTask="popular";
+                                        tabs.setCurrentTab(0);
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).setView(layout).create().show();
+                }
+                else{
+                    tmbdConnected=false;
 
+                    tmbdBtn.setText(getResources().getText(resources[tmbdConnected?1:0]));
+                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected?View.VISIBLE:View.GONE);
+
+                    if(currentTask=="watchlist" || currentTask=="favorites") {
+                        currentTask="popular";
+                        tabs.setCurrentTab(0);
+                    }
+                }
+
+            }
+        });
         btn=(LoginButton)findViewById(R.id.fb_login_button);
         btn.setReadPermissions(Arrays.asList("public_profile","user_status","user_birthday","user_about_me","user_relationships"));
         btn.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
@@ -529,6 +700,13 @@ public class MainActivity extends Activity {
         spec.setContent(R.id.favorite);
         spec.setIndicator("Улюблені");
         tabs.addTab(spec);
+
+        spec = tabs.newTabSpec("watchlist");
+        spec.setContent(R.id.watchlist);
+        spec.setIndicator("Watch List");
+        tabs.addTab(spec);
+
+        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(View.GONE);
         tabs.setCurrentTab(0);
 
         Spinner spinner =(Spinner) findViewById(R.id.searchTypeSpinner);

@@ -17,6 +17,8 @@
     <string name="status">Статус:</string>
     <string name="app_id">890577940973011</string>
     <string name="lorem_ipsum">SOME KIND OF ORIGINAL TITLE TITLE TITLE TITLE</string>
+    <string name="tmbd_login_text">Log in with TMbd</string>
+    <string name="tmbd_logout_text">Log out from TMbd</string>
 
     <string-array name="search_type_array">
         <item android:id="@+id/usual">Звичайний</item>
