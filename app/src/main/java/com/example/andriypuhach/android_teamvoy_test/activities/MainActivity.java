@@ -5,10 +5,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -21,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.LinearLayout;
@@ -55,6 +58,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.PasswordAuthentication;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +100,7 @@ public class MainActivity extends Activity {
     private LoginButton btn;
     private Button tmbdBtn;
     private boolean tmbdConnected=false;
+    private SharedPreferences prefs;
 
     public boolean isOnline() {
         ConnectivityManager cm =
@@ -589,59 +594,77 @@ public class MainActivity extends Activity {
         uiHelper = new UiLifecycleHelper(this, statusCallback);
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        prefs=getPreferences(MODE_PRIVATE);
         listAdapter = new MovieListAdapter(this);
         header = createHeader();
         tmbdBtn=(Button)findViewById(R.id.login_tmbd_button);
         tmbdBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!tmbdConnected)   {
+                if(!tmbdConnected) {
                     LinearLayout layout = new LinearLayout(getApplicationContext());
                     layout.setOrientation(LinearLayout.VERTICAL);
-                    final EditText edName=new EditText(getApplicationContext());
+                    String nick = prefs.getString("nickname", "");
+                    String pass = prefs.getString("password", "");
+                    final EditText edName = new EditText(getApplicationContext());
                     edName.setHint("nickname");
+                    edName.setText(nick);
                     final EditText edPass = new EditText(getApplicationContext());
+                    edPass.setText(pass);
                     edPass.setHint("password");
                     edPass.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     edPass.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    layout.addView(edName);
-                    layout.addView(edPass);
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle("Login in Tmbd")
-                            .setPositiveButton("Login", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                        TheMovieDBAccount.authenticate(getApplicationContext(),edName.getText().toString(),edPass.getText().toString());
-                                        tmbdConnected=true;
-                                    tmbdBtn.setText(getResources().getText(resources[tmbdConnected?1:0]));
-                                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected?View.VISIBLE:View.GONE);
 
-                                    if(currentTask=="watchlist" || currentTask=="favorites") {
-                                        currentTask="popular";
-                                        tabs.setCurrentTab(0);
+                    final CheckBox savePass=new CheckBox(getApplicationContext());
+                    savePass.setText("Зберегти пароль?");
+                        layout.addView(edName);
+                        layout.addView(edPass);
+                    layout.addView(savePass);
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Login in Tmbd")
+                                .setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String name = edName.getText().toString();
+                                        String pass = edPass.getText().toString();
+                                        if(savePass.isChecked()) {
+
+                                            SharedPreferences.Editor editor = prefs.edit();
+                                            editor.putString("nickname", name);
+                                            editor.putString("password", pass);
+                                            editor.apply();
+                                        }
+
+                                        TheMovieDBAccount.authenticate(getApplicationContext(), name,pass);
+                                        tmbdConnected = true;
+                                        tmbdBtn.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                                        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
+
+                                        if (currentTask == "watchlist" || currentTask == "favorites") {
+                                            currentTask = "popular";
+                                            tabs.setCurrentTab(0);
+                                        }
                                     }
-                                }
-                            })
-                            .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            }).setView(layout).create().show();
-                }
-                else{
-                    tmbdConnected=false;
+                                })
+                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                }).setView(layout).create().show();
+                    }
+                else {
+                        tmbdConnected = false;
 
-                    tmbdBtn.setText(getResources().getText(resources[tmbdConnected?1:0]));
-                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected?View.VISIBLE:View.GONE);
+                        tmbdBtn.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
 
-                    if(currentTask=="watchlist" || currentTask=="favorites") {
-                        currentTask="popular";
-                        tabs.setCurrentTab(0);
+                        if (currentTask == "watchlist" || currentTask == "favorites") {
+                            currentTask = "popular";
+                            tabs.setCurrentTab(0);
+                        }
                     }
                 }
-
-            }
         });
         btn=(LoginButton)findViewById(R.id.fb_login_button);
         btn.setReadPermissions(Arrays.asList("public_profile","user_status","user_birthday","user_about_me","user_relationships"));
