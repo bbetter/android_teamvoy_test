@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Header;
 import retrofit.http.POST;
@@ -52,9 +53,10 @@ public interface RetrofitMovieService {
 
     @GET("/account/100/favorite/movies?api_key=" + apiKey)
     public void getFavoriteMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
-
+    @FormUrlEncoded
     @POST("/account/100/favorite?api_key="+apiKey)
-    public JsonElement  setFavorite(@Field("media_type")String type,@Field("media_id")int id,@Field("favorite")boolean favorite, @Query("session_id") String sessionId);
+    public void setFavorite(@Field("media_type")String type,@Field("media_id")int id,@Field("favorite")boolean favorite, @Query("session_id") String sessionId,Callback<JsonElement> res);
+    @FormUrlEncoded
     @POST("/account/100/watchlist?api_key="+apiKey)
-    public JsonElement  setWatchlist(@Field("media_type")String type,@Field("media_id")int id,@Field("watchlist")boolean watchlist, @Query("session_id") String sessionId);
+    public void  setWatchlist(@Field("media_type")String type,@Field("media_id")int id,@Field("watchlist")boolean watchlist, @Query("session_id") String sessionId,Callback<JsonElement>res);
 }

@@ -305,11 +305,31 @@ public class MainActivity extends Activity {
                 }
             }
             else{
-                RestClient.getApi().setFavorite("movie",selectedMovie.getId(),true,RestClient.sessionId);
+                RestClient.getApi().setFavorite("movie",selectedMovie.getId(),true,RestClient.sessionId,new Callback<JsonElement>() {
+                    @Override
+                    public void success(JsonElement jsonElement, Response response) {
+                        Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                
+                    }
+                });
             }
         }
         else if(item.getTitle()=="Add To Watchlist"){
-            RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),true, RestClient.sessionId);
+            RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),true, RestClient.sessionId,new Callback<JsonElement>() {
+                @Override
+                public void success(JsonElement jsonElement, Response response) {
+                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+
+                }
+            });
         }
         else if(item.getTitle()=="Share"){
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -329,10 +349,30 @@ public class MainActivity extends Activity {
             }
             else{
                 if(currentTask=="watchlist"){
-                    RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),false, RestClient.sessionId);
+                    RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),false, RestClient.sessionId,new Callback<JsonElement>() {
+                        @Override
+                        public void success(JsonElement jsonElement, Response response) {
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Log.w("w","W");
+                        }
+                    });
                 }
                 else {
-                    RestClient.getApi().setFavorite("movie",selectedMovie.getId(),false, RestClient.sessionId);
+                    RestClient.getApi().setFavorite("movie",selectedMovie.getId(),false, RestClient.sessionId,new Callback<JsonElement>() {
+                        @Override
+                        public void success(JsonElement jsonElement, Response response) {
+
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Log.w("w","W");
+                        }
+                    });
                 }
 
             }
@@ -400,7 +440,7 @@ public class MainActivity extends Activity {
                     if (movieRequestResult.getResults() != null) {
                         int cp = movieRequestResult.getPage();
                         totalPages = movieRequestResult.getTotal_pages();
-                        refreshList((ArrayList<Movie>)Movie.favorites,cp,totalPages);
+                        refreshList((ArrayList<Movie>)movieRequestResult.getResults(),cp,totalPages);
                     }
                 }
 

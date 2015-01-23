@@ -343,59 +343,60 @@ public class AccountActivity extends FragmentActivity {
                     scView.requestDisallowInterceptTouchEvent(true);
                 }
             });
+            if (googleMap != null) {
+                googleMap.clear();
+                googleMap.setMyLocationEnabled(true);
 
-            googleMap.clear();
-            googleMap.setMyLocationEnabled(true);
+                googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                    @Override
+                    public boolean onMyLocationButtonClick() {
+                        googleMap.clear();
+                        Location location = googleMap.getMyLocation();
+                        account.setLocation(location);
+                        saveAccount();
+                        new PlaceLoader().execute(location);
 
-            googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-                @Override
-                public boolean onMyLocationButtonClick() {
-                    googleMap.clear();
-                    Location location = googleMap.getMyLocation();
-                    account.setLocation(location);
-                    saveAccount();
-                    new PlaceLoader().execute(location);
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
 
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
+                        LatLng latLng = new LatLng(latitude, longitude);
 
-                    LatLng latLng = new LatLng(latitude, longitude);
+                        googleMap.addMarker(new MarkerOptions().position(latLng));
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                        return false;
+                    }
+                });
 
-                    googleMap.addMarker(new MarkerOptions().position(latLng));
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+                    @Override
+                    public void onMapLongClick(LatLng latLng) {
+                        googleMap.clear();
+                        googleMap.addMarker(new MarkerOptions().position(latLng));
+
+                        Location location = new Location("Current Marker Position");
+                        location.setLatitude(latLng.latitude);
+                        location.setLongitude(latLng.longitude);
+                        location.setTime(new Date().getTime());
+
+                        account.setLocation(location);
+                        saveAccount();
+                        new PlaceLoader().execute(location);
+                        Toast.makeText(getApplicationContext(), "Ви змінили вашу локацію", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                if (account != null && account.getLocation() != null) {
+                    Location lc = account.getLocation();
+                    googleMap.addMarker(new MarkerOptions().position(new LatLng(lc.getLatitude(), lc.getLongitude())));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lc.getLatitude(), lc.getLongitude())));
                     googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-                    return false;
+                    new PlaceLoader().execute(lc);
                 }
-            });
-
-            googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                @Override
-                public void onMapLongClick(LatLng latLng) {
-                    googleMap.clear();
-                    googleMap.addMarker(new MarkerOptions().position(latLng));
-
-                    Location location = new Location("Current Marker Position");
-                    location.setLatitude(latLng.latitude);
-                    location.setLongitude(latLng.longitude);
-                    location.setTime(new Date().getTime());
-
-                    account.setLocation(location);
-                    saveAccount();
-                    new PlaceLoader().execute(location);
-                    Toast.makeText(getApplicationContext(), "Ви змінили вашу локацію", Toast.LENGTH_SHORT).show();
+                if (googleMap == null) {
+                    Toast.makeText(getApplicationContext(),
+                            "Sorry! unable to create maps", Toast.LENGTH_SHORT)
+                            .show();
                 }
-            });
-            if (account != null && account.getLocation() != null) {
-                Location lc = account.getLocation();
-                googleMap.addMarker(new MarkerOptions().position(new LatLng(lc.getLatitude(), lc.getLongitude())));
-                googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lc.getLatitude(), lc.getLongitude())));
-                googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-                new PlaceLoader().execute(lc);
-            }
-            if (googleMap == null) {
-                Toast.makeText(getApplicationContext(),
-                        "Sorry! unable to create maps", Toast.LENGTH_SHORT)
-                        .show();
             }
         }
     }
