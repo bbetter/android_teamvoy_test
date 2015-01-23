@@ -1,5 +1,7 @@
 package com.example.andriypuhach.android_teamvoy_test.rest;
 
+import android.util.Log;
+
 import com.example.andriypuhach.android_teamvoy_test.services.RetrofitMovieService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,7 +17,9 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import retrofit.ErrorHandler;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
 
@@ -43,6 +47,13 @@ public class RestClient {
                 .setEndpoint(BASE_URL)
                 .setConverter(new GsonConverter(gson))
                 .setClient(new OkClient(ok))
+                .setErrorHandler(new ErrorHandler() {
+                    @Override
+                    public Throwable handleError(RetrofitError cause) {
+                        Log.e("cause", cause.getBody().toString());
+                        throw new RuntimeException("test");
+                    }
+                })
                 .build().create(RetrofitMovieService.class);
 
     }

@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import retrofit.Callback;
 import retrofit.http.Body;
+import retrofit.http.Field;
 import retrofit.http.GET;
 import retrofit.http.Header;
 import retrofit.http.POST;
@@ -53,7 +54,7 @@ public interface RetrofitMovieService {
     public void getFavoriteMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
 
     @POST("/account/100/favorite?api_key="+apiKey)
-    public void  setFavorite(@Body JsonObject body, @Query("session_id") String sessionId,Callback<JsonElement> res);
+    public JsonElement  setFavorite(@Field("media_type")String type,@Field("media_id")int id,@Field("favorite")boolean favorite, @Query("session_id") String sessionId);
     @POST("/account/100/watchlist?api_key="+apiKey)
-    public void  setWatchlist(@Body JsonObject body, @Query("session_id") String sessionId,Callback<JsonElement> res);
+    public JsonElement  setWatchlist(@Field("media_type")String type,@Field("media_id")int id,@Field("watchlist")boolean watchlist, @Query("session_id") String sessionId);
 }

@@ -10,7 +10,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -41,24 +40,16 @@ import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
-import com.example.andriypuhach.android_teamvoy_test.services.RetrofitMovieService;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.PasswordAuthentication;
-import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -68,46 +59,21 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class MainActivity extends Activity {
-    int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
-    TabHost tabs;
-    private UiLifecycleHelper uiHelper;
-    private String currentSearchType="";
-    private Session.StatusCallback statusCallback = new Session.StatusCallback() {
-        @Override
-        public void call(Session session, SessionState state, Exception exception) {
-            if (state.isOpened()) {
-                Log.d("FacebookSampleActivity", "Facebook session opened");
-            } else if (state.isClosed()) {
-                Log.d("FacebookSampleActivity", "Facebook session closed");
-            }
-        }
-    };
-
-    private int currentPopularPage = 1;
-    private int currentUpcomingPage = 1;
-    private int currentTopRatedPage = 1;
-    private int currentFavoritePage = 1;
-    private int currentWatchListPage=1;
-    private int currentSearchPage = 1;
-
-    private String currentTask = "popular";
-    private int totalPages = 1000;
+    //region UI STUFF
+    private TabHost tabs;
+    private LoginButton facebookLoginButton;
+    private Button theMovieDatabaseLoginButton;
     private ListView listView;
-    private EditText searchView;
-    private MovieListAdapter listAdapter;
-    private Movie selectedMovie = null;
+    private EditText searchEditText;
     private View header;
-    private LoginButton btn;
-    private Button tmbdBtn;
-    private boolean tmbdConnected=false;
-    private SharedPreferences prefs;
 
-    public boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnected();
-    }
+    private UiLifecycleHelper uiHelper; //facebook helper thing
+    int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
+
+    /**
+     * метод створює заголовок списку
+     * @return повертає View створеного заголовку
+     */
     View createHeader() {
         View v = getLayoutInflater().inflate(R.layout.header, null);
         v.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
@@ -145,7 +111,7 @@ public class MainActivity extends Activity {
                     case "search":
                         if(currentSearchPage<totalPages){
                             currentSearchPage++;
-                            refreshListBySearch(searchView.getText().toString());
+                            refreshListBySearch(searchEditText.getText().toString());
                             return;
                         }
                     default:
@@ -188,7 +154,7 @@ public class MainActivity extends Activity {
                     case "search":
                         if(currentSearchPage>1){
                             currentSearchPage--;
-                            refreshListBySearch(Uri.encode(searchView.getText().toString()));
+                            refreshListBySearch(Uri.encode(searchEditText.getText().toString()));
                             return;
                         }
                     case "watchlist":
@@ -207,6 +173,23 @@ public class MainActivity extends Activity {
         });
         return v;
     }
+    /**
+     * метод оновлює список фільмів і заголовок
+     * @param movies
+     * @param currentPage
+     * @param totalPages
+     */
+    void refreshList(ArrayList<Movie> movies,int currentPage,int totalPages){
+        listAdapter.setMovies(movies);
+        ((TextView) header.findViewById(R.id.currentPageView)).setText(currentPage + " of " + totalPages);
+        if (listView.getHeaderViewsCount() == 0)
+            listView.addHeaderView(header);
+        listView.setAdapter(listAdapter);
+    }
+    /**
+     * метод оновлює дані в ListAdapter виконавши запит на пошук рядка
+     * @param search рядок для пошуку
+     */
     void refreshListBySearch(String search) {
         if(currentSearchType=="Звичайний пошук") {
 
@@ -217,12 +200,7 @@ public class MainActivity extends Activity {
                     if (result.getResults() != null) {
                         currentSearchPage = result.getPage();
                         totalPages = result.getTotal_pages();
-                        ArrayList<Movie> movies = (ArrayList<Movie>) result.getResults();
-                        listAdapter.setMovies(movies);
-                        ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
-                        if (listView.getHeaderViewsCount() == 0)
-                            listView.addHeaderView(header);
-                        listView.setAdapter(listAdapter);
+                        refreshList((ArrayList<Movie>)result.getResults(),currentSearchPage,totalPages);
                     }
                 }
 
@@ -230,7 +208,7 @@ public class MainActivity extends Activity {
                 public void failure(RetrofitError error) {
                     if (!isOnline()) {
                         Toast.makeText(getApplicationContext(), "Connection trouble. Please reconnect to the Internet", Toast.LENGTH_SHORT).show();
-                        listView.setVisibility(View.GONE);
+
                     }
                 }
             });
@@ -238,17 +216,188 @@ public class MainActivity extends Activity {
         else{
             listView.setVisibility(View.GONE);
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
-            List<Movie> result=dbHelper.searchByNote(search);
-            totalPages = (result.size() < 20) ? 1 : (int) Math.ceil((double) result.size() / 20.0);
-            ArrayList<Movie> movies = (ArrayList<Movie>) result;
-            listAdapter.setMovies(movies);
-            ((TextView) header.findViewById(R.id.currentPageView)).setText(currentSearchPage + " of " + totalPages);
-            if (listView.getHeaderViewsCount() == 0)
-                listView.addHeaderView(header);
-            listView.setAdapter(listAdapter);
+            ArrayList<Movie> movies=(ArrayList<Movie>)dbHelper.searchByNote(search);
+            totalPages = (movies.size() < 20) ? 1 : (int) Math.ceil((double) movies.size() / 20.0);
+            refreshList(movies,currentSearchPage,totalPages);
         }
     }
-    //region detailsClickListener
+    /**
+     * метод оновлює список фільмів що знаходяться у списку "до перегляду"
+     */
+    void refreshWatchList(){
+        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,new Callback<MovieRequestResult>() {
+            @Override
+            public void success(MovieRequestResult movieRequestResult, Response response) {
+                listView.setVisibility(View.VISIBLE);
+                if (movieRequestResult.getResults() != null) {
+                    int cp = movieRequestResult.getPage();
+                    totalPages = movieRequestResult.getTotal_pages();
+                    refreshList((ArrayList<Movie>)movieRequestResult.getResults(),cp,totalPages);
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+            }
+        });
+    }
+    /**
+     * оновлює список данними в залежності від обраної вкладки
+     */
+    void refreshListByTab() {
+        int currentPage=1;
+        switch(currentTask){
+            case "popular":currentPage=currentPopularPage;
+                break;
+            case "upcoming":currentPage=currentUpcomingPage;
+                break;
+            case "top_rated":currentPage=currentTopRatedPage;
+                break;
+            default:
+                currentPage=currentPopularPage;
+                break;
+        }
+
+        RestClient.getApi().getMovies(currentTask, currentPage, new Callback<MovieRequestResult>() {
+            @Override
+            public void success(MovieRequestResult movieRequestResult, Response response) {
+                listView.setVisibility(View.VISIBLE);
+                if (movieRequestResult.getResults() != null) {
+                    int cp = movieRequestResult.getPage();
+                    totalPages = movieRequestResult.getTotal_pages();
+                    refreshList((ArrayList<Movie>) movieRequestResult.getResults(), cp, totalPages);
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+            }
+        });
+    }
+
+    //region contextMenu
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if (item.getTitle() == "Add To Favorites") {
+            if(!tmbdConnected) {
+                if (!isMovieInList(Movie.favorites, selectedMovie)) {
+                    Movie.favorites.add(selectedMovie);
+                    Movie.saveFavorites();
+                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else{
+                RestClient.getApi().setFavorite("movie",selectedMovie.getId(),true,RestClient.sessionId);
+            }
+        }
+        else if(item.getTitle()=="Add To Watchlist"){
+            RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),true, RestClient.sessionId);
+        }
+        else if(item.getTitle()=="Share"){
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "I like " +
+                    selectedMovie.getTitle() +
+                    "You should check it\n" +
+                    Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
+
+            startActivity(Intent.createChooser(sharingIntent, "Share via"));
+        }
+        else if(item.getTitle()=="Delete"){
+            if(!tmbdConnected) {
+                removeById(selectedMovie.getId(), Movie.favorites);
+                Movie.saveFavorites();
+
+            }
+            else{
+                if(currentTask=="watchlist"){
+                    RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),false, RestClient.sessionId);
+                }
+                else {
+                    RestClient.getApi().setFavorite("movie",selectedMovie.getId(),false, RestClient.sessionId);
+                }
+
+            }
+            refreshFavorites();
+            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
+        }
+        else if(item.getTitle()=="Post To Facebook"){
+            FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
+        }
+        return true;
+    }
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
+        if (view.getId() == R.id.listView) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            selectedMovie = listAdapter.getMovie(info.position - 1);
+            menu.setHeaderTitle(selectedMovie.getTitle());
+            List<String> listMenuItems= new ArrayList<>();
+            listMenuItems.add("Share");
+            listMenuItems.add("Add To Favorites");
+            listMenuItems.add("Add To Watchlist");
+            if(Session.getActiveSession().isOpened())
+                listMenuItems.add("Post To Facebook");
+            if(currentTask=="favorite") {
+                listMenuItems.remove("Share");
+                listMenuItems.remove("Add To Favorites");
+                listMenuItems.add("Delete");
+            }
+            if(currentTask=="watchlist"){
+                listMenuItems.remove("Share");
+                listMenuItems.remove("Add To Watchlist");
+                listMenuItems.add("Delete");
+            }
+            String [] menuItems=new String[listMenuItems.size()];
+            listMenuItems.toArray(menuItems);
+            for (int i = 0; i < menuItems.length; i++) {
+                menu.add(Menu.NONE, i, i, menuItems[i]);
+            }
+        }
+    }
+    /**
+     * оновлює список улюблених фільмів, або із бази даних або із сайту themoviedb.org
+     */
+    public void refreshFavorites() {
+        listView.setVisibility(View.VISIBLE);
+        if(!tmbdConnected) {
+            Movie.refreshFavorites();
+            if (Movie.favorites != null) {
+                totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
+                int begin = ((currentFavoritePage - 1) * 20);
+                int end = begin + 20;
+                if (Movie.favorites.size() <= end)
+                    end = Movie.favorites.size();
+                refreshList((ArrayList<Movie>)Movie.favorites.subList(begin,end),currentFavoritePage,totalPages);
+            } else {
+                listAdapter.setMovies(new ArrayList<Movie>());
+                listView.setAdapter(listAdapter);
+            }
+        }
+        else{
+            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,new Callback<MovieRequestResult>() {
+                @Override
+                public void success(MovieRequestResult movieRequestResult, Response response) {
+                    listView.setVisibility(View.VISIBLE);
+                    if (movieRequestResult.getResults() != null) {
+                        int cp = movieRequestResult.getPage();
+                        totalPages = movieRequestResult.getTotal_pages();
+                        refreshList((ArrayList<Movie>)Movie.favorites,cp,totalPages);
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+
+                }
+            });
+        }
+    }
+    /**
+     * on list item click listener, starts details activity
+     */
     private OnItemClickListener detailsListener = new OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -293,7 +442,52 @@ public class MainActivity extends Activity {
             }
         }
     };
-    //endregion detailsClickListener
+    //endregion
+
+
+
+    private Session.StatusCallback statusCallback = new Session.StatusCallback() {
+        @Override
+        public void call(Session session, SessionState state, Exception exception) {
+            if (state.isOpened()) {
+                Log.d("FacebookSampleActivity", "Facebook session opened");
+            } else if (state.isClosed()) {
+                Log.d("FacebookSampleActivity", "Facebook session closed");
+            }
+        }
+    };
+
+    private int currentPopularPage = 1;
+    private int currentUpcomingPage = 1;
+    private int currentTopRatedPage = 1;
+    private int currentFavoritePage = 1;
+    private int currentWatchListPage=1;
+    private int currentSearchPage = 1;
+    private int totalPages = 1000;
+
+    private String currentTask = "popular";
+    private String currentSearchType="";
+
+
+    private MovieListAdapter listAdapter;
+    private Movie selectedMovie = null;
+
+    private boolean tmbdConnected=false;
+    private SharedPreferences prefs;
+
+    /**
+     *  метод перевіряє чи користувач під'єднаний до мережі
+     * @return повертає true якщо під'єднаний інакше(навіть ящко підключення саме триває) - ні
+     */
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnected();
+    }
+
+
+
     //region tabChangeListener
     private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
         @Override
@@ -312,72 +506,11 @@ public class MainActivity extends Activity {
             }
         }
     };
-    void refreshWatchList(){
-        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,new Callback<MovieRequestResult>() {
-            @Override
-            public void success(MovieRequestResult movieRequestResult, Response response) {
-                listView.setVisibility(View.VISIBLE);
-                if (movieRequestResult.getResults() != null) {
-                    int cp = movieRequestResult.getPage();
-                    totalPages = movieRequestResult.getTotal_pages();
-                    listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
-                    if (listView.getHeaderViewsCount() == 0)
-                        listView.addHeaderView(header);
-                    ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
-                    listView.setAdapter(listAdapter);
-                }
-            }
 
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e("Error",error.getUrl()+"\n"+error.getBody());
-            }
-        });
-    }
-    void refreshListByTab() {
-        int currentPage=1;
-        switch(currentTask){
-            case "popular":currentPage=currentPopularPage;
-                break;
-            case "upcoming":currentPage=currentUpcomingPage;
-                break;
-            case "top_rated":currentPage=currentTopRatedPage;
-                break;
-            case "watchlist":currentPage=currentWatchListPage;
-            default:
-                currentPage=currentPopularPage;
-                break;
-        }
 
-        RestClient.getApi().getMovies(currentTask, currentPage, new Callback<MovieRequestResult>() {
-            @Override
-            public void success(MovieRequestResult movieRequestResult, Response response) {
-                listView.setVisibility(View.VISIBLE);
-                if (movieRequestResult.getResults() != null) {
-                    int cp = movieRequestResult.getPage();
-                    totalPages = movieRequestResult.getTotal_pages();
-                    listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
-                    if (listView.getHeaderViewsCount() == 0)
-                        listView.addHeaderView(header);
-                    ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
-                    listView.setAdapter(listAdapter);
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                if (!isOnline()) {
-                    Toast.makeText(getApplicationContext(), "Connection trouble. Please reconnect to the Internet", Toast.LENGTH_LONG).show();
-                    listView.setVisibility(View.GONE);
-                }
-
-            }
-        });
-    }
 
 
     //endregion tabChangeListener
-    //region contextMenu
     private boolean isMovieInList(List<Movie> movieList, Movie movie) {
         for (Movie m : movieList) {
             if (movie.getOriginal_title().equals(m.getTitle()) && movie.getRelease_date().equals(m.getRelease_date()))
@@ -394,182 +527,7 @@ public class MainActivity extends Activity {
 
         }
     }
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (item.getTitle() == "Add To Favorites") {
-            if(!tmbdConnected) {
-                if (!isMovieInList(Movie.favorites, selectedMovie)) {
-                    Movie.favorites.add(selectedMovie);
-                    Movie.saveFavorites();
-                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else{
-                String entry="{'media_type':'movie','media_id':"+selectedMovie.getId()+",'favorite':true}";
-                JsonObject obj = new Gson().fromJson(entry,JsonObject.class);
-                RestClient.getApi().setFavorite(obj,RestClient.sessionId,new Callback<JsonElement>() {
-                    @Override
-                    public void success(JsonElement jsonElement, Response response) {
-                        Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                    }
 
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Toast.makeText(getApplicationContext(), "Не вдалось додати фільм", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        }
-        else if(item.getTitle()=="Add To Watchlist"){
-            String entry="{'media_type':'movie','media_id':"+selectedMovie.getId()+",'watchlist':true}";
-            JsonObject obj = new Gson().fromJson(entry,JsonObject.class);
-            RestClient.getApi().setWatchlist(obj, RestClient.sessionId, new Callback<JsonElement>() {
-                @Override
-                public void success(JsonElement jsonElement, Response response) {
-                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    Toast.makeText(getApplicationContext(), "Не вдалось додати фільм", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-        else if(item.getTitle()=="Share"){
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-            sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "I like " +
-                    selectedMovie.getTitle() +
-                    "You should check it\n" +
-                    Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
-
-            startActivity(Intent.createChooser(sharingIntent, "Share via"));
-        }
-        else if(item.getTitle()=="Delete"){
-            if(!tmbdConnected) {
-                removeById(selectedMovie.getId(), Movie.favorites);
-                Movie.saveFavorites();
-
-            }
-            else{
-                String entry="";
-                if(currentTask=="watchlist"){
-                    entry = "{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'warchlist':false}";
-                    JsonObject obj = new Gson().fromJson(entry, JsonObject.class);
-                    RestClient.getApi().setWatchlist(obj, RestClient.sessionId, new Callback<JsonElement>() {
-                        @Override
-                        public void success(JsonElement jsonElement, Response response) {
-
-                        }
-
-                        @Override
-                        public void failure(RetrofitError error) {
-
-                        }
-                    });
-                }
-                else {
-                    entry = "{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}";
-                    JsonObject obj = new Gson().fromJson(entry, JsonObject.class);
-                    RestClient.getApi().setFavorite(obj, RestClient.sessionId, new Callback<JsonElement>() {
-                        @Override
-                        public void success(JsonElement jsonElement, Response response) {
-
-                        }
-
-                        @Override
-                        public void failure(RetrofitError error) {
-
-                        }
-                    });
-                }
-
-            }
-            refreshFavorites();
-            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
-        }
-        else if(item.getTitle()=="Post To Facebook"){
-            FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
-        }
-        return true;
-    }
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-        if (view.getId() == R.id.listView) {
-            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            selectedMovie = listAdapter.getMovie(info.position - 1);
-            menu.setHeaderTitle(selectedMovie.getTitle());
-            List<String> listMenuItems= new ArrayList<>();
-            listMenuItems.add("Share");
-            listMenuItems.add("Add To Favorites");
-            listMenuItems.add("Add To Watchlist");
-            if(Session.getActiveSession().isOpened())
-                listMenuItems.add("Post To Facebook");
-            if(currentTask=="favorite") {
-                listMenuItems.remove("Share");
-                listMenuItems.remove("Add To Favorites");
-                listMenuItems.add("Delete");
-            }
-            if(currentTask=="watchlist"){
-                listMenuItems.remove("Share");
-                listMenuItems.remove("Add To Watchlist");
-                listMenuItems.add("Delete");
-            }
-            String [] menuItems=new String[listMenuItems.size()];
-            listMenuItems.toArray(menuItems);
-            for (int i = 0; i < menuItems.length; i++) {
-                menu.add(Menu.NONE, i, i, menuItems[i]);
-            }
-        }
-    }
-    //endregion
-    //region favorites
-    public void refreshFavorites() {
-      listView.setVisibility(View.VISIBLE);
-      if(!tmbdConnected) {
-          Movie.refreshFavorites();
-          if (Movie.favorites != null) {
-              totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
-              int begin = ((currentFavoritePage - 1) * 20);
-              int end = begin + 20;
-              if (Movie.favorites.size() <= end)
-                  end = Movie.favorites.size();
-              listAdapter.setMovies(new ArrayList<>(Movie.favorites.subList(begin, end)));
-              ((TextView) header.findViewById(R.id.currentPageView)).setText(currentFavoritePage + " of " + totalPages);
-              if (listView.getHeaderViewsCount() == 0)
-                  listView.addHeaderView(header);
-              listView.setAdapter(listAdapter);
-          } else {
-              listAdapter.setMovies(new ArrayList<Movie>());
-              listView.setAdapter(listAdapter);
-          }
-      }
-      else{
-            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,new Callback<MovieRequestResult>() {
-                @Override
-                public void success(MovieRequestResult movieRequestResult, Response response) {
-                    listView.setVisibility(View.VISIBLE);
-                    if (movieRequestResult.getResults() != null) {
-                        int cp = movieRequestResult.getPage();
-                        totalPages = movieRequestResult.getTotal_pages();
-                        listAdapter.setMovies((ArrayList<Movie>) movieRequestResult.getResults());
-                        if (listView.getHeaderViewsCount() == 0)
-                            listView.addHeaderView(header);
-                        ((TextView) header.findViewById(R.id.currentPageView)).setText(cp + " of " + totalPages);
-                        listView.setAdapter(listAdapter);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-
-                }
-            });
-      }
-    }
-    //endregion
     //region optionsMenu
 
     @Override
@@ -595,13 +553,14 @@ public class MainActivity extends Activity {
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         prefs=getPreferences(MODE_PRIVATE);
+        tmbdConnected=prefs.getBoolean("Connected", false);
         listAdapter = new MovieListAdapter(this);
         header = createHeader();
-        tmbdBtn=(Button)findViewById(R.id.login_tmbd_button);
-        tmbdBtn.setOnClickListener(new View.OnClickListener() {
+        theMovieDatabaseLoginButton =(Button)findViewById(R.id.login_tmbd_button);
+        theMovieDatabaseLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!tmbdConnected) {
+                if (!tmbdConnected) {
                     LinearLayout layout = new LinearLayout(getApplicationContext());
                     layout.setOrientation(LinearLayout.VERTICAL);
                     String nick = prefs.getString("nickname", "");
@@ -615,60 +574,59 @@ public class MainActivity extends Activity {
                     edPass.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     edPass.setTransformationMethod(PasswordTransformationMethod.getInstance());
 
-                    final CheckBox savePass=new CheckBox(getApplicationContext());
+                    final CheckBox savePass = new CheckBox(getApplicationContext());
                     savePass.setText("Зберегти пароль?");
-                        layout.addView(edName);
-                        layout.addView(edPass);
+                    layout.addView(edName);
+                    layout.addView(edPass);
                     layout.addView(savePass);
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("Login in Tmbd")
-                                .setPositiveButton("Login", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        String name = edName.getText().toString();
-                                        String pass = edPass.getText().toString();
-                                        if(savePass.isChecked()) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Login in Tmbd")
+                            .setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String name = edName.getText().toString();
+                                    String pass = edPass.getText().toString();
+                                    if (savePass.isChecked()) {
 
-                                            SharedPreferences.Editor editor = prefs.edit();
-                                            editor.putString("nickname", name);
-                                            editor.putString("password", pass);
-                                            editor.apply();
-                                        }
-
-                                        TheMovieDBAccount.authenticate(getApplicationContext(), name,pass);
-                                        tmbdConnected = true;
-                                        tmbdBtn.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
-                                        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
-
-                                        if (currentTask == "watchlist" || currentTask == "favorites") {
-                                            currentTask = "popular";
-                                            tabs.setCurrentTab(0);
-                                        }
+                                        SharedPreferences.Editor editor = prefs.edit();
+                                        editor.putString("nickname", name);
+                                        editor.putString("password", pass);
+                                        editor.apply();
                                     }
-                                })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
+
+                                    TheMovieDBAccount.full_authenticate(getApplicationContext(), name, pass);
+                                    tmbdConnected = true;
+                                    theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
+
+                                    if (currentTask == "watchlist" || currentTask == "favorites") {
+                                        currentTask = "popular";
+                                        tabs.setCurrentTab(0);
                                     }
-                                }).setView(layout).create().show();
-                    }
-                else {
-                        tmbdConnected = false;
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).setView(layout).create().show();
+                } else {
+                    tmbdConnected = false;
 
-                        tmbdBtn.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
-                        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
+                    theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
 
-                        if (currentTask == "watchlist" || currentTask == "favorites") {
-                            currentTask = "popular";
-                            tabs.setCurrentTab(0);
-                        }
+                    if (currentTask == "watchlist" || currentTask == "favorites") {
+                        currentTask = "popular";
+                        tabs.setCurrentTab(0);
                     }
                 }
+            }
         });
-        btn=(LoginButton)findViewById(R.id.fb_login_button);
-        btn.setReadPermissions(Arrays.asList("public_profile","user_status","user_birthday","user_about_me","user_relationships"));
-        btn.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
+        facebookLoginButton =(LoginButton)findViewById(R.id.fb_login_button);
+        facebookLoginButton.setReadPermissions(Arrays.asList("public_profile", "user_status", "user_birthday", "user_about_me", "user_relationships"));
+        facebookLoginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override
             public void onUserInfoFetched(GraphUser graphUser) {
                 if (graphUser != null) {
@@ -678,18 +636,18 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        searchView = (EditText) findViewById(R.id.searchMovieEdit);
-        searchView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        searchEditText= (EditText) findViewById(R.id.searchMovieEdit);
+        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                     if (isOnline()) {
-                        if (searchView.getText().toString().equals("")) {
+                        if (searchEditText.getText().toString().equals("")) {
                             currentTask = tabs.getCurrentTabTag();
                             refreshListByTab();
                         } else {
                             currentTask = "search";
-                            refreshListBySearch(Uri.encode(searchView.getText().toString()));
+                            refreshListBySearch(Uri.encode(searchEditText.getText().toString()));
                         }
                         return true;
                     }

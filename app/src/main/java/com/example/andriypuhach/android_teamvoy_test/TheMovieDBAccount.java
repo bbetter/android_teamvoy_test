@@ -19,14 +19,50 @@ import retrofit.client.Response;
  */
 public class TheMovieDBAccount {
 
-        public static void authenticate(final Context context ,final String username,final String password){
+    private Callback<JsonElement> getTokenCallBack=new Callback<JsonElement>(){
+
+        @Override
+        public void success(JsonElement jsonElement, Response response) {
+            String requestToken=jsonElement.getAsJsonObject().get("request_token").toString();
+            RestClient.requestToken=requestToken.substring(1,requestToken.length()-1);
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+
+        }
+    };
+    private Callback<JsonElement> validateTokenCallBack= new Callback<JsonElement>() {
+        @Override
+        public void success(JsonElement jsonElement, Response response) {
+
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+
+        }
+    };
+    private Callback<JsonElement> getNewSession= new Callback<JsonElement>() {
+        @Override
+        public void success(JsonElement jsonElement, Response response) {
+            String sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
+            RestClient.sessionId=sessionId.substring(1,sessionId.length()-1);
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+
+        }
+    };
+
+        public static void full_authenticate(final Context context, final String username, final String password){
         Toast.makeText(context,"Wait until connection is established",Toast.LENGTH_LONG).show();
 
         RestClient.getApi().getToken(new Callback<JsonElement>() {
             @Override
             public void success(JsonElement element, Response response) {
-                String requestToken=element.getAsJsonObject().get("request_token").toString();
-                RestClient.requestToken=requestToken.substring(1,requestToken.length()-1);
+
                 Log.i("REQUEST_TOKEN",RestClient.requestToken);
                 RestClient.getApi().validateToken(RestClient.requestToken, username, password, new Callback<JsonElement>() {
                     @Override
