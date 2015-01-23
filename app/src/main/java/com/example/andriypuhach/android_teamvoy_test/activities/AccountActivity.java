@@ -59,63 +59,45 @@ public class AccountActivity extends FragmentActivity {
     private Account account;
     private EditAccountDialog edAccDialog;
     private ScrollView scView;
-    private String fetchCityNameUsingGoogleMap(Location lc){
+
+    private String fetchCityNameUsingGoogleMap(Location lc) {
         String googleMapUrl = "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + lc.getLatitude() + ","
                 + lc.getLongitude() + "&sensor=false&language=fr";
-        try
-        {
+        try {
             OkHttpClient client = new OkHttpClient();
-            Request request= new Request.Builder()
+            Request request = new Request.Builder()
                     .url(googleMapUrl)
                     .build();
 
             JSONObject googleMapResponse = new JSONObject(client.newCall(request).execute().body().string());
             JSONArray results = (JSONArray) googleMapResponse.get("results");
-            for (int i = 0; i < results.length(); i++)
-            {
-                // loop among all addresses within this result
+            for (int i = 0; i < results.length(); i++) {
                 JSONObject result = results.getJSONObject(i);
-                if (result.has("address_components"))
-                {
+                if (result.has("address_components")) {
                     JSONArray addressComponents = result.getJSONArray("address_components");
-                    // loop among all address component to find a 'locality' or 'sublocality'
-                    for (int j = 0; j < addressComponents.length(); j++)
-                    {
+                    for (int j = 0; j < addressComponents.length(); j++) {
                         JSONObject addressComponent = addressComponents.getJSONObject(j);
-                        if (result.has("types"))
-                        {
+                        if (result.has("types")) {
                             JSONArray types = addressComponent.getJSONArray("types");
-
-                            // search for locality and sublocality
                             String cityName = null;
 
-                            for (int k = 0; k < types.length(); k++)
-                            {
-                                if ("locality".equals(types.getString(k)) && cityName == null)
-                                {
-                                    if (addressComponent.has("long_name"))
-                                    {
+                            for (int k = 0; k < types.length(); k++) {
+                                if ("locality".equals(types.getString(k)) && cityName == null) {
+                                    if (addressComponent.has("long_name")) {
                                         cityName = addressComponent.getString("long_name");
-                                    }
-                                    else if (addressComponent.has("short_name"))
-                                    {
+                                    } else if (addressComponent.has("short_name")) {
                                         cityName = addressComponent.getString("short_name");
                                     }
                                 }
-                                if ("sublocality".equals(types.getString(k)))
-                                {
-                                    if (addressComponent.has("long_name"))
-                                    {
+                                if ("sublocality".equals(types.getString(k))) {
+                                    if (addressComponent.has("long_name")) {
                                         cityName = addressComponent.getString("long_name");
-                                    }
-                                    else if (addressComponent.has("short_name"))
-                                    {
+                                    } else if (addressComponent.has("short_name")) {
                                         cityName = addressComponent.getString("short_name");
                                     }
                                 }
                             }
-                            if (cityName != null)
-                            {
+                            if (cityName != null) {
 
                                 return cityName;
 
@@ -124,21 +106,23 @@ public class AccountActivity extends FragmentActivity {
                     }
                 }
             }
-        }
-        catch (Exception ignored)
-        {
+        } catch (Exception ignored) {
             ignored.printStackTrace();
         }
         return null;
     }
-    private void refreshFields(){
-        TextView nameView=(TextView)findViewById(R.id.tvUserName);
-        TextView surnameView=(TextView)findViewById(R.id.tvUserSurname);
-        TextView relView=(TextView)findViewById(R.id.tvRelStatus);
-        TextView aboutView=(TextView)findViewById(R.id.tvAbout);
-        TextView birthdayView=(TextView)findViewById(R.id.tvBirthday);
-        TextView workView=(TextView)findViewById(R.id.tvWorks);
-        if(account!=null) {
+
+    /**
+     * метод оновляє інформацію в усіх полях в даній активності
+     */
+    private void refreshFields() {
+        TextView nameView = (TextView) findViewById(R.id.tvUserName);
+        TextView surnameView = (TextView) findViewById(R.id.tvUserSurname);
+        TextView relView = (TextView) findViewById(R.id.tvRelStatus);
+        TextView aboutView = (TextView) findViewById(R.id.tvAbout);
+        TextView birthdayView = (TextView) findViewById(R.id.tvBirthday);
+        TextView workView = (TextView) findViewById(R.id.tvWorks);
+        if (account != null) {
             birthdayView.setText(String.valueOf(account.getBirthday().toLocalDate().toString()));
             nameView.setText(account.getName());
             surnameView.setText(account.getSurname());
@@ -163,13 +147,21 @@ public class AccountActivity extends FragmentActivity {
             workView.setText(works.toString());
         }
     }
-    private void loadAccount(){
+
+    /**
+     * метод завантажує інформацію про акаунт із SharedPreferences
+     */
+    private void loadAccount() {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(DateTime.class, new Serializer())
                 .create();
-        account=gson.fromJson(mPrefs.getString("Account", ""), Account.class);
+        account = gson.fromJson(mPrefs.getString("Account", ""), Account.class);
     }
-    private void saveAccount(){
+
+    /**
+     * метод зберігає інформацію про аккаунт у SharedPreferences
+     */
+    private void saveAccount() {
         SharedPreferences.Editor editor = mPrefs.edit();
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(DateTime.class, new Serializer())
@@ -177,16 +169,16 @@ public class AccountActivity extends FragmentActivity {
         editor.putString("Account", gson.toJson(account));
         editor.apply();
     }
-    class AccountLoader extends AsyncTask<Void,Void,Account>{
+
+    class AccountLoader extends AsyncTask<Void, Void, Account> {
         @Override
         protected Account doInBackground(Void... params) {
             try {
                 account = FacebookManager.getUserInfo(AccountActivity.this);
                 account.setPhotoURLs(FacebookManager.getUserPhotoPathes(AccountActivity.this));
                 saveAccount();
-            }
-            catch (Exception e){
-                Log.w("SD",e.getStackTrace().toString());
+            } catch (Exception e) {
+
             }
             return account;
         }
@@ -196,7 +188,12 @@ public class AccountActivity extends FragmentActivity {
             refreshFields();
         }
     }
-    class PlaceLoader extends AsyncTask<Location,Void,String>{
+
+    /**
+     * клас призначений для завантаження інформації про локацію позначену на карті
+     * або за допомогою GeoCoder або зробивши запит до api і зпарсивши json
+     */
+    class PlaceLoader extends AsyncTask<Location, Void, String> {
         @Override
         protected void onProgressUpdate(Void... values) {
             placeView.setText("...");
@@ -212,13 +209,10 @@ public class AccountActivity extends FragmentActivity {
         protected String doInBackground(Location... params) {
             Geocoder geocoder =
                     new Geocoder(getApplicationContext(), Locale.getDefault());
-            // Get the current location from the input parameter list
             Location loc = params[0];
-            // Create a list to contain the result address
             List<Address> addresses = null;
-            if(geocoder.isPresent()) {
+            if (geocoder.isPresent()) {
                 try {
-
                     addresses = geocoder.getFromLocation(loc.getLatitude(),
                             loc.getLongitude(), 1);
                 } catch (IOException e1) {
@@ -236,31 +230,27 @@ public class AccountActivity extends FragmentActivity {
                     e2.printStackTrace();
                     return errorString;
                 }
-                // If the reverse geocode returned an address
+
                 if (addresses != null && addresses.size() > 0) {
-                    // Get the first address
+
                     Address address = addresses.get(0);
-                /*
-                 * Format the first line of address (if available),
-                 * city, and country name.
-                 */
+
                     String addressText = String.format(
                             "%s, %s, %s",
-                            // If there's a street address, add it
+
                             address.getMaxAddressLineIndex() > 0 ?
                                     address.getAddressLine(0) : "",
-                            // Locality is usually a city
+
                             address.getLocality(),
-                            // The country of the address
+
                             address.getCountryName());
-                    // Return the text
+
                     return addressText;
                 } else {
                     return "No address found";
                 }
-            }
-            else{
-             return fetchCityNameUsingGoogleMap(loc)   ;
+            } else {
+                return fetchCityNameUsingGoogleMap(loc);
             }
         }
     }
@@ -268,18 +258,18 @@ public class AccountActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.in_account_menu,menu);
+        getMenuInflater().inflate(R.menu.in_account_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.editAccount){
-            edAccDialog=new EditAccountDialog(this,account);
+        if (item.getItemId() == R.id.editAccount) {
+            edAccDialog = new EditAccountDialog(this, account);
             edAccDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    account=edAccDialog.account;
+                    account = edAccDialog.account;
                     saveAccount();
                     refreshFields();
                 }
@@ -291,22 +281,23 @@ public class AccountActivity extends FragmentActivity {
                     refreshFields();
                 }
             });
-           edAccDialog.show();
+            edAccDialog.show();
         }
         return true;
     }
+
     @Override
-    protected void onCreate(Bundle savedInstance){
+    protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         setContentView(R.layout.account);
-        scView=(ScrollView)findViewById(R.id.scrollView);
-        mPrefs= getPreferences(MODE_PRIVATE);
-        placeView=(TextView)findViewById(R.id.tvPlace);
-        fbPhotoFlipper=(ViewFlipper)findViewById(R.id.fbPhotoFlipper);
+        scView = (ScrollView) findViewById(R.id.scrollView);
+        mPrefs = getPreferences(MODE_PRIVATE);
+        placeView = (TextView) findViewById(R.id.tvPlace);
+        fbPhotoFlipper = (ViewFlipper) findViewById(R.id.fbPhotoFlipper);
         initilizeMap();
         final TextView textView = new TextView(getApplicationContext());
         textView.setText("Ваші дані були змінені, бажаєте синхронізуватись із фейсбуком?");
-        if(Session.getActiveSession().isOpened()) {
+        if (Session.getActiveSession().isOpened()) {
             new AlertDialog.Builder(AccountActivity.this)
                     .setCustomTitle(textView)
                     .setPositiveButton("Так", new DialogInterface.OnClickListener() {
@@ -332,20 +323,20 @@ public class AccountActivity extends FragmentActivity {
                     })
 
                     .show();
-        }
-        else {
+        } else {
             loadAccount();
             refreshFields();
         }
     }
+
     private void initilizeMap() {
 
         if (googleMap == null) {
-            googleMap = ((WorkaroundMapFragment)getSupportFragmentManager().findFragmentById(
+            googleMap = ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(
                     R.id.map)).getMap();
 
-            ((WorkaroundMapFragment)getSupportFragmentManager().findFragmentById(
-                    R.id.map)).setListener(new WorkaroundMapFragment.OnTouchListener(){
+            ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(
+                    R.id.map)).setListener(new WorkaroundMapFragment.OnTouchListener() {
 
                 @Override
                 public void onTouch() {
@@ -391,11 +382,11 @@ public class AccountActivity extends FragmentActivity {
                     account.setLocation(location);
                     saveAccount();
                     new PlaceLoader().execute(location);
-                    Toast.makeText(getApplicationContext(),"Ви змінили вашу локацію",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Ви змінили вашу локацію", Toast.LENGTH_SHORT).show();
                 }
             });
-            if (account!=null && account.getLocation()!=null){
-                Location lc=account.getLocation();
+            if (account != null && account.getLocation() != null) {
+                Location lc = account.getLocation();
                 googleMap.addMarker(new MarkerOptions().position(new LatLng(lc.getLatitude(), lc.getLongitude())));
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lc.getLatitude(), lc.getLongitude())));
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
@@ -408,12 +399,14 @@ public class AccountActivity extends FragmentActivity {
             }
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
         initilizeMap();
     }
-    public boolean onTouchEvent(MotionEvent event){
+
+    public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastX = event.getX();

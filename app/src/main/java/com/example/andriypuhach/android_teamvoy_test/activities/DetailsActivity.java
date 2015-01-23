@@ -148,6 +148,11 @@ public class DetailsActivity extends Activity {
         detailsListView.setAdapter(detailsListAdapter);
       }
 
+    /**
+     * метод перетворює URI отримане при виборі із галереї зображень у абсолютний шлях до цього зображення
+     * @param uri
+     * @return шлях до зображення
+     */
     private String getImagePath(Uri uri){
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
         cursor.moveToFirst();

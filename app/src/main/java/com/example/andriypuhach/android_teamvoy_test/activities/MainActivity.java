@@ -528,7 +528,6 @@ public class MainActivity extends Activity {
 
         }
     }
-
     public void full_authenticate(final String username, final String password){
         Toast.makeText(getApplicationContext(),"Wait until connection is established",Toast.LENGTH_LONG).show();
         RestClient.getApi().getToken(new Callback<JsonElement>() {
