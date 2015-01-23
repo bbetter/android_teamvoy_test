@@ -1,6 +1,7 @@
 package com.example.andriypuhach.android_teamvoy_test;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,7 +20,7 @@ import retrofit.client.Response;
  */
 public class TheMovieDBAccount {
 
-    private Callback<JsonElement> getTokenCallBack=new Callback<JsonElement>(){
+    private static Callback<JsonElement> getTokenCallBack=new Callback<JsonElement>(){
 
         @Override
         public void success(JsonElement jsonElement, Response response) {
@@ -32,7 +33,7 @@ public class TheMovieDBAccount {
 
         }
     };
-    private Callback<JsonElement> validateTokenCallBack= new Callback<JsonElement>() {
+    private static Callback<JsonElement> validateTokenCallBack= new Callback<JsonElement>() {
         @Override
         public void success(JsonElement jsonElement, Response response) {
 
@@ -43,7 +44,8 @@ public class TheMovieDBAccount {
 
         }
     };
-    private Callback<JsonElement> getNewSession= new Callback<JsonElement>() {
+
+    private static Callback<JsonElement> getNewSessionCallBack= new Callback<JsonElement>() {
         @Override
         public void success(JsonElement jsonElement, Response response) {
             String sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
@@ -55,48 +57,16 @@ public class TheMovieDBAccount {
 
         }
     };
+        public static void getNewSession(){
+            RestClient.getApi().getNewSession(RestClient.requestToken,getNewSessionCallBack);
+        }
+        public static void getNewToken(){
+            RestClient.getApi().getToken(getTokenCallBack);
+        }
+        public static void validateToken(final String username,final String password){
+            RestClient.getApi().validateToken(RestClient.requestToken, username, password, getTokenCallBack);
 
-        public static void full_authenticate(final Context context, final String username, final String password){
-        Toast.makeText(context,"Wait until connection is established",Toast.LENGTH_LONG).show();
+        }
 
-        RestClient.getApi().getToken(new Callback<JsonElement>() {
-            @Override
-            public void success(JsonElement element, Response response) {
-
-                Log.i("REQUEST_TOKEN",RestClient.requestToken);
-                RestClient.getApi().validateToken(RestClient.requestToken, username, password, new Callback<JsonElement>() {
-                    @Override
-                    public void success(JsonElement jsonElement, Response response) {
-                        if(jsonElement.getAsJsonObject().get("success").toString().equals("true")){
-                            RestClient.getApi().getNewSession(RestClient.requestToken,new Callback<JsonElement>() {
-                                @Override
-                                public void success(JsonElement jsonElement, Response response) {
-                                    String sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
-                                    RestClient.sessionId=sessionId.substring(1,sessionId.length()-1);
-                                    Log.i("SESSION_ID",RestClient.sessionId);
-                                    Toast.makeText(context,"Connection is successfully established",Toast.LENGTH_LONG).show();
-                                }
-
-                                @Override
-                                public void failure(RetrofitError error) {
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Log.e("Error",error.getUrl()+"\n"+error.getBody());
-                    }
-                });
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                return ;
-            }
-        });
-
-    }
 
 }

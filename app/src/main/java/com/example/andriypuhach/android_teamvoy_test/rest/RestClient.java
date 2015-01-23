@@ -47,13 +47,7 @@ public class RestClient {
                 .setEndpoint(BASE_URL)
                 .setConverter(new GsonConverter(gson))
                 .setClient(new OkClient(ok))
-                .setErrorHandler(new ErrorHandler() {
-                    @Override
-                    public Throwable handleError(RetrofitError cause) {
-                        Log.e("cause", cause.getBody().toString());
-                        throw new RuntimeException("test");
-                    }
-                })
+
                 .build().create(RetrofitMovieService.class);
 
     }

@@ -274,8 +274,24 @@ public class MainActivity extends Activity {
             }
         });
     }
+    private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
+        @Override
+        public void onTabChanged(String tabId) {
+            currentTask = tabId;
+            if (!currentTask.equals("favorite")) {
+                if(!currentTask.equals("watchlist")) {
+                    refreshListByTab();
+                }
+                else{
 
-    //region contextMenu
+                    refreshWatchList();
+                }
+            } else {
+                refreshFavorites();
+            }
+        }
+    };
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getTitle() == "Add To Favorites") {
@@ -370,7 +386,7 @@ public class MainActivity extends Activity {
                 int end = begin + 20;
                 if (Movie.favorites.size() <= end)
                     end = Movie.favorites.size();
-                refreshList((ArrayList<Movie>)Movie.favorites.subList(begin,end),currentFavoritePage,totalPages);
+                refreshList(new ArrayList<>(Movie.favorites.subList(begin,end)),currentFavoritePage,totalPages);
             } else {
                 listAdapter.setMovies(new ArrayList<Movie>());
                 listView.setAdapter(listAdapter);
@@ -442,10 +458,21 @@ public class MainActivity extends Activity {
             }
         }
     };
-    //endregion
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.account_menu,menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.openAccount){
+            startActivity(new Intent(MainActivity.this,AccountActivity.class));
+        }
+        return true;
+    }
 
-
+//endregion
     private Session.StatusCallback statusCallback = new Session.StatusCallback() {
         @Override
         public void call(Session session, SessionState state, Exception exception) {
@@ -485,32 +512,6 @@ public class MainActivity extends Activity {
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnected();
     }
-
-
-
-    //region tabChangeListener
-    private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
-        @Override
-        public void onTabChanged(String tabId) {
-            currentTask = tabId;
-            if (!currentTask.equals("favorite")) {
-                if(!currentTask.equals("watchlist")) {
-                    refreshListByTab();
-                }
-                else{
-
-                    refreshWatchList();
-                }
-            } else {
-                refreshFavorites();
-            }
-        }
-    };
-
-
-
-
-    //endregion tabChangeListener
     private boolean isMovieInList(List<Movie> movieList, Movie movie) {
         for (Movie m : movieList) {
             if (movie.getOriginal_title().equals(m.getTitle()) && movie.getRelease_date().equals(m.getRelease_date()))
@@ -528,24 +529,62 @@ public class MainActivity extends Activity {
         }
     }
 
-    //region optionsMenu
+    public void full_authenticate(final String username, final String password){
+        Toast.makeText(getApplicationContext(),"Wait until connection is established",Toast.LENGTH_LONG).show();
+        RestClient.getApi().getToken(new Callback<JsonElement>() {
+            @Override
+            public void success(JsonElement element, Response response) {
+                String requestToken=element.getAsJsonObject().get("request_token").toString();
+                RestClient.requestToken=requestToken.substring(1,requestToken.length()-1);
+                RestClient.getApi().validateToken(RestClient.requestToken, username, password, new Callback<JsonElement>() {
+                    @Override
+                    public void success(JsonElement jsonElement, Response response) {
+                        if(jsonElement.getAsJsonObject().get("success").toString().equals("true")){
+                            SharedPreferences.Editor editor=prefs.edit();
+                            editor.putString("RequestToken",RestClient.requestToken);
+                            editor.apply();
+                            RestClient.getApi().getNewSession(RestClient.requestToken,new Callback<JsonElement>() {
+                                @Override
+                                public void success(JsonElement jsonElement, Response response) {
+                                    String sessionId=jsonElement.getAsJsonObject().get("session_id").toString();
+                                    RestClient.sessionId=sessionId.substring(1,sessionId.length()-1);
+                                    SharedPreferences.Editor editor=prefs.edit();
+                                    editor.putString("SessionID",RestClient.sessionId);
+                                    editor.apply();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.account_menu,menu);
-        return true;
+                                        tmbdConnected = true;
+                                        theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                                        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
+
+                                        if (currentTask == "watchlist" || currentTask == "favorites") {
+                                            currentTask = "popular";
+                                            tabs.setCurrentTab(0);
+                                        }
+                                    Toast.makeText(getApplicationContext(),"Connection is successfully established",Toast.LENGTH_LONG).show();
+                                }
+
+                                @Override
+                                public void failure(RetrofitError error) {
+                                    Toast.makeText(getApplicationContext(),"Wrong Password,Try again!",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        return ;
+                    }
+                });
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                return ;
+            }
+        });
+
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.openAccount){
-           startActivity(new Intent(MainActivity.this,AccountActivity.class));
-        }
-        return true;
-    }
-
-
-    //endregion
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -553,7 +592,13 @@ public class MainActivity extends Activity {
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         prefs=getPreferences(MODE_PRIVATE);
-        tmbdConnected=prefs.getBoolean("Connected", false);
+        RestClient.sessionId=prefs.getString("SessionID","");
+        RestClient.requestToken=prefs.getString("RequestToken","");
+
+        if(RestClient.sessionId=="" && RestClient.requestToken!=""){
+            TheMovieDBAccount.getNewSession();
+            tmbdConnected=true;
+        }
         listAdapter = new MovieListAdapter(this);
         header = createHeader();
         theMovieDatabaseLoginButton =(Button)findViewById(R.id.login_tmbd_button);
@@ -587,22 +632,14 @@ public class MainActivity extends Activity {
                                     String name = edName.getText().toString();
                                     String pass = edPass.getText().toString();
                                     if (savePass.isChecked()) {
-
                                         SharedPreferences.Editor editor = prefs.edit();
                                         editor.putString("nickname", name);
                                         editor.putString("password", pass);
                                         editor.apply();
                                     }
-
-                                    TheMovieDBAccount.full_authenticate(getApplicationContext(), name, pass);
-                                    tmbdConnected = true;
-                                    theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
-                                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
-
-                                    if (currentTask == "watchlist" || currentTask == "favorites") {
-                                        currentTask = "popular";
-                                        tabs.setCurrentTab(0);
-                                    }
+                                        RestClient.sessionId="";
+                                        RestClient.requestToken="";
+                                        full_authenticate(name, pass);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -612,8 +649,11 @@ public class MainActivity extends Activity {
                                 }
                             }).setView(layout).create().show();
                 } else {
+                    SharedPreferences.Editor editor=prefs.edit();
+                    editor.putString("SessionID","");
+                    editor.putString("RequestToken","");
+                    editor.apply();
                     tmbdConnected = false;
-
                     theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
                     tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
 
@@ -687,7 +727,8 @@ public class MainActivity extends Activity {
         spec.setIndicator("Watch List");
         tabs.addTab(spec);
 
-        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(View.GONE);
+        theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
         tabs.setCurrentTab(0);
 
         Spinner spinner =(Spinner) findViewById(R.id.searchTypeSpinner);
@@ -717,6 +758,19 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         uiHelper.onResume();
+        RestClient.sessionId=prefs.getString("SessionID","");
+        RestClient.requestToken=prefs.getString("RequestToken","");
+        tmbdConnected=false;
+        if(RestClient.requestToken!="") {
+            if (RestClient.sessionId != "") {
+                tmbdConnected = true;
+            }
+            else{
+                TheMovieDBAccount.getNewSession();
+            }
+        }
+        theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+        tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
     }
 
     @Override
