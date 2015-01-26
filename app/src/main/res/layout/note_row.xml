@@ -15,13 +15,13 @@
             />
     </LinearLayout>
 
-    <TextView android:id="@+id/tvCastCharacter"
+    <TextView android:id="@+id/tvNoteTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:text="@string/lorem_ipsum"
         android:layout_toRightOf="@+id/noteThumbnail"/>
-    <TextView android:id="@+id/tvCastName"
+    <TextView android:id="@+id/tvNoteText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="15sp"
@@ -29,7 +29,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignBottom="@+id/noteThumbnail"
-        android:layout_below="@+id/tvCastCharacter"
+        android:layout_below="@+id/tvNoteTitle"
         android:layout_toRightOf="@+id/noteThumbnail"
         android:layout_toEndOf="@+id/noteThumbnail" />
 </RelativeLayout>

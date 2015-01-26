@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,15 +13,14 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.HorizontalScrollView;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
-import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsListAdapter;
+import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsExpandableListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
@@ -43,8 +40,8 @@ public class DetailsActivity extends Activity {
     private float lastX;
     private ViewFlipper viewFlipper;
     //endregion
-    private ListView detailsListView;
-    private DetailsListAdapter detailsListAdapter;
+    private ExpandableListView detailsListView;
+    private DetailsExpandableListAdapter detailsListAdapter;
 
     private CreateNoteDialog cdd ;
     private EditNoteDialog edd;
@@ -57,17 +54,22 @@ public class DetailsActivity extends Activity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        if(v.getId()==R.id.notesListView){
-            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            selectedNote=(Movie.Details.Note)DetailsListAdapter.notesAdapter.getItem(info.position);
-            menu.setHeaderTitle(selectedNote.getNoteTitle());
-            List<String> listMenuItems= new ArrayList<>();
-            listMenuItems.add("Edit");
-            listMenuItems.add("Delete");
-            String []menuArray=new String[2];
-            listMenuItems.toArray(menuArray);
-            for (int i = 0; i < menuArray.length; i++) {
-                menu.add(Menu.NONE, i, i, menuArray[i]);
+        if(v.getId()==R.id.detailsList){
+            ExpandableListView.ExpandableListContextMenuInfo info = (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+
+            int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+            int groupPosition = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+            int childPosition = ExpandableListView.getPackedPositionChild(info.packedPosition);
+            selectedNote=movie.getDetails().getNotes().get(childPosition);
+            if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                switch(groupPosition){
+                    case DetailsExpandableListAdapter.VIEW_TYPE_NOTES:
+                        menu.add("Delete");
+                        menu.add("Edit");
+                        break;
+                    default:
+
+                }
             }
         }
     }
@@ -155,23 +157,21 @@ public class DetailsActivity extends Activity {
 
                   movie.getDetails().setCast(castNCrewResult.getCast());
                   movie.getDetails().setCrew(castNCrewResult.getCrew());
-                    detailsListView=(ListView)findViewById(R.id.detailsList);
-                    detailsListAdapter= new DetailsListAdapter(DetailsActivity.this,movie);
+                    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
+                    detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
                     detailsListView.setAdapter(detailsListAdapter);
-                    detailsListView.setVisibility(View.INVISIBLE);
-                    detailsListView.setVisibility(View.VISIBLE);
+                    registerForContextMenu(detailsListView);
                 }
 
                 @Override
                 public void failure(RetrofitError error) {
                     movie.getDetails().setCast(new ArrayList<Movie.Details.CastPerson>());
                     movie.getDetails().setCrew(new ArrayList<Movie.Details.CrewPerson>());
-                    detailsListView=(ListView)findViewById(R.id.detailsList);
-                    detailsListAdapter= new DetailsListAdapter(DetailsActivity.this,movie);
+                    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
+                    detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
                     detailsListAdapter.setMovie(movie);
                     detailsListView.setAdapter(detailsListAdapter);
-                    detailsListView.setVisibility(View.INVISIBLE);
-                    detailsListView.setVisibility(View.VISIBLE);
+                    registerForContextMenu(detailsListView);
                 }
             });
 

@@ -10,11 +10,11 @@
         android:layout_height="wrap_content">
     </ViewFlipper>
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/detailsList"
         android:layout_width="fill_parent"
         android:layout_height="match_parent">
-    </ListView>
+    </ExpandableListView>
 
  </LinearLayout>
 
