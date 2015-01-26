@@ -1,6 +1,7 @@
 package com.example.andriypuhach.android_teamvoy_test.services;
 
 import com.example.andriypuhach.android_teamvoy_test.TheMovieDBAccount;
+import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.google.gson.JsonElement;
@@ -29,7 +30,8 @@ public interface RetrofitMovieService {
 
     @GET("/movie/{id}?api_key=" + apiKey)
     public void getDetails(@Path("id") int id, Callback<Movie.Details> det);
-
+    @GET("/movie/{id}/credits?api_key="+apiKey)
+    public void getCastNCrew(@Path("id")int id,Callback<CastNCrewResult> castncrew);
     @GET("/movie/{id}/images?api_key=" + apiKey)
     public void getImagePathes(@Path("id") int id, Callback<JsonElement> imRes);
 
@@ -50,7 +52,6 @@ public interface RetrofitMovieService {
 
     @GET("/account/100/watchlist/movies?api_key=" + apiKey)
     public void getWatchListMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
-
     @GET("/account/100/favorite/movies?api_key=" + apiKey)
     public void getFavoriteMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @FormUrlEncoded
@@ -59,4 +60,7 @@ public interface RetrofitMovieService {
     @FormUrlEncoded
     @POST("/account/100/watchlist?api_key="+apiKey)
     public void  setWatchlist(@Field("media_type")String type,@Field("media_id")int id,@Field("watchlist")boolean watchlist, @Query("session_id") String sessionId,Callback<JsonElement>res);
+    //поки що не використовується
+    @GET("/movie/{id}/account_states?api_key="+apiKey)
+    public void getMovieByAccountInfo(@Path("id") int id);
 }

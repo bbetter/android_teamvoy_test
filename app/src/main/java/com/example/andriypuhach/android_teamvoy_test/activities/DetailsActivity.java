@@ -26,11 +26,17 @@ import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
+import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
+import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class DetailsActivity extends Activity {
     //region viewFlipper variables
@@ -143,9 +149,34 @@ public class DetailsActivity extends Activity {
             ImageLoader.getInstance().displayImage(Movie.transformPathToURL(path, Movie.ImageSize.W600),view);
         }
 
-        detailsListView=(ListView)findViewById(R.id.detailsList);
-        detailsListAdapter= new DetailsListAdapter(this,movie);
-        detailsListView.setAdapter(detailsListAdapter);
+            RestClient.getApi().getCastNCrew(movie.getId(),new Callback<CastNCrewResult>() {
+                @Override
+                public void success(CastNCrewResult castNCrewResult, Response response) {
+
+                  movie.getDetails().setCast(castNCrewResult.getCast());
+                  movie.getDetails().setCrew(castNCrewResult.getCrew());
+                    detailsListView=(ListView)findViewById(R.id.detailsList);
+                    detailsListAdapter= new DetailsListAdapter(DetailsActivity.this,movie);
+                    detailsListView.setAdapter(detailsListAdapter);
+                    detailsListView.setVisibility(View.INVISIBLE);
+                    detailsListView.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    movie.getDetails().setCast(new ArrayList<Movie.Details.CastPerson>());
+                    movie.getDetails().setCrew(new ArrayList<Movie.Details.CrewPerson>());
+                    detailsListView=(ListView)findViewById(R.id.detailsList);
+                    detailsListAdapter= new DetailsListAdapter(DetailsActivity.this,movie);
+                    detailsListAdapter.setMovie(movie);
+                    detailsListView.setAdapter(detailsListAdapter);
+                    detailsListView.setVisibility(View.INVISIBLE);
+                    detailsListView.setVisibility(View.VISIBLE);
+                }
+            });
+
+
+
       }
 
     /**

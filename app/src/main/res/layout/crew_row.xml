@@ -3,11 +3,11 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
-    <LinearLayout android:id="@+id/noteThumbnail"
+    <LinearLayout android:id="@+id/crewThumbnail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="false">
-        <ImageView android:id="@+id/noteImage"
+        <ImageView android:id="@+id/crewImage"
             android:layout_height="121dp"
             android:layout_width="121dp"
             android:contentDescription="@string/app_name"
@@ -15,21 +15,21 @@
             />
     </LinearLayout>
 
-    <TextView android:id="@+id/tvCastCharacter"
+    <TextView android:id="@+id/tvCrewDepartmentJob"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="15sp"
         android:text="@string/lorem_ipsum"
-        android:layout_toRightOf="@+id/noteThumbnail"/>
-    <TextView android:id="@+id/tvCastName"
+        android:layout_toRightOf="@+id/crewThumbnail"/>
+    <TextView android:id="@+id/tvCrewName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:text="Text"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignBottom="@+id/noteThumbnail"
-        android:layout_below="@+id/tvCastCharacter"
-        android:layout_toRightOf="@+id/noteThumbnail"
-        android:layout_toEndOf="@+id/noteThumbnail" />
+        android:layout_alignBottom="@+id/crewThumbnail"
+        android:layout_below="@+id/tvCrewDepartmentJob"
+        android:layout_toRightOf="@+id/crewThumbnail"
+        android:layout_toEndOf="@+id/crewThumbnail" />
 </RelativeLayout>

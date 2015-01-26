@@ -21,28 +21,33 @@ import java.util.ArrayList;
 public class DetailsListAdapter extends BaseAdapter {
     private final static int VIEW_TYPE_INFO = 0;
     private final static int VIEW_TYPE_NOTES = 1;
+    private final static int VIEW_TYPE_CAST = 2;
+    private final static int VIEW_TYPE_CREW = 3;
     private Activity activity;
     private Context context;
     private LayoutInflater inflater;
     private Movie movie;
     public static NotesListAdapter notesAdapter;
+    public static CastListAdapter castAdapter;
+    public static CrewListAdapter crewAdapter;
 
     public void setMovie(Movie mv){
         movie=mv;
-        notesAdapter.setNotes(movie.getDetails().getNotes());
+        notesAdapter=new NotesListAdapter(context);
+        castAdapter=new CastListAdapter(context);
+        crewAdapter=new CrewListAdapter(context);
         notifyDataSetChanged();
     }
-    public DetailsListAdapter(Activity act, Movie movie) {
+    public DetailsListAdapter(Activity act,Movie movie) {
         this.activity = act;
         this.context = act.getApplicationContext();
-        this.movie = movie;
-        inflater = LayoutInflater.from(context);
-        notifyDataSetChanged();
+        this.inflater=LayoutInflater.from(context);
+        setMovie(movie);
     }
 
     @Override
     public int getCount() {
-        return 2;
+        return 4;
     }
 
     @Override
@@ -57,19 +62,25 @@ public class DetailsListAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 2;
+        return 4;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (position == 0) return VIEW_TYPE_INFO;
-        return VIEW_TYPE_NOTES;
+        switch(position){
+            case 0: return VIEW_TYPE_INFO;
+            case 3: return VIEW_TYPE_NOTES;
+            case 1: return VIEW_TYPE_CAST;
+            case 2: return VIEW_TYPE_CREW;
+            default: return VIEW_TYPE_INFO;
+        }
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         int type = getItemViewType(position);
         ViewHolder holder = new ViewHolder();
+        ViewGroup.LayoutParams layoutParams;
         if (convertView == null) {
             switch (type) {
                 case VIEW_TYPE_INFO: {
@@ -96,6 +107,22 @@ public class DetailsListAdapter extends BaseAdapter {
                     activity.registerForContextMenu(holder.lvNotes);
                 }
                 break;
+                case VIEW_TYPE_CAST:{
+                    convertView=inflater.inflate(R.layout.details_row_cast,parent,false);
+                    holder.lvCast=(ListView)convertView.findViewById(R.id.castListView);
+                    castAdapter = new CastListAdapter(activity.getApplicationContext());
+                    castAdapter.setCast(new ArrayList<Movie.Details.CastPerson>());
+                    holder.lvCast.setAdapter(castAdapter);
+                }
+                break;
+                case VIEW_TYPE_CREW:{
+                    convertView=inflater.inflate(R.layout.details_row_crew,parent,false);
+                    holder.lvCrew=(ListView)convertView.findViewById(R.id.crewListView);
+                    crewAdapter = new CrewListAdapter(activity.getApplicationContext());
+                    crewAdapter.setCrew(new ArrayList<Movie.Details.CrewPerson>());
+                    holder.lvCrew.setAdapter(crewAdapter);
+                }
+                break;
             }
             convertView.setTag(holder);
         } else {
@@ -117,11 +144,25 @@ public class DetailsListAdapter extends BaseAdapter {
                 break;
             case VIEW_TYPE_NOTES:
                 //listview in listview stuff,have to predict row height
-                ViewGroup.LayoutParams layoutParams = holder.lvNotes.getLayoutParams();
+                layoutParams = holder.lvNotes.getLayoutParams();
                 layoutParams.height = 250 * holder.lvNotes.getCount();
                 holder.lvNotes.setLayoutParams(layoutParams);
                 notesAdapter.setNotes(movie.getDetails().getNotes());
                 break;
+            case VIEW_TYPE_CAST:{
+                layoutParams= holder.lvCast.getLayoutParams();
+                layoutParams.height=250 * holder.lvCast.getCount();
+                holder.lvCast.setLayoutParams(layoutParams);
+                castAdapter.setCast(movie.getDetails().getCast());
+            }
+            break;
+            case VIEW_TYPE_CREW:{
+                layoutParams= holder.lvCrew.getLayoutParams();
+                layoutParams.height=250 * holder.lvCrew.getCount();
+                holder.lvCrew.setLayoutParams(layoutParams);
+                crewAdapter.setCrew(movie.getDetails().getCrew());
+            }
+            break;
         }
         return convertView;
     }
@@ -138,5 +179,7 @@ public class DetailsListAdapter extends BaseAdapter {
         TextView tvCompanies;
         TextView tvOverview;
         ListView lvNotes;
+        ListView lvCast;
+        ListView lvCrew;
     }
 }

@@ -192,7 +192,6 @@ public class MainActivity extends Activity {
      */
     void refreshListBySearch(String search) {
         if(currentSearchType=="Звичайний пошук") {
-
             RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
                 @Override
                 public void success(MovieRequestResult result, Response response) {
@@ -214,7 +213,6 @@ public class MainActivity extends Activity {
             });
         }
         else{
-            listView.setVisibility(View.GONE);
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
             ArrayList<Movie> movies=(ArrayList<Movie>)dbHelper.searchByNote(search);
             totalPages = (movies.size() < 20) ? 1 : (int) Math.ceil((double) movies.size() / 20.0);
@@ -313,7 +311,7 @@ public class MainActivity extends Activity {
 
                     @Override
                     public void failure(RetrofitError error) {
-                
+
                     }
                 });
             }
@@ -327,7 +325,6 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void failure(RetrofitError error) {
-
                 }
             });
         }
@@ -393,7 +390,8 @@ public class MainActivity extends Activity {
             List<String> listMenuItems= new ArrayList<>();
             listMenuItems.add("Share");
             listMenuItems.add("Add To Favorites");
-            listMenuItems.add("Add To Watchlist");
+            if(tmbdConnected)
+                listMenuItems.add("Add To Watchlist");
             if(Session.getActiveSession().isOpened())
                 listMenuItems.add("Post To Facebook");
             if(currentTask=="favorite") {

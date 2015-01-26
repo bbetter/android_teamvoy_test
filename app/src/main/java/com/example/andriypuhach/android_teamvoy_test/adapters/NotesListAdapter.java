@@ -1,8 +1,6 @@
 package com.example.andriypuhach.android_teamvoy_test.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
-import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -59,8 +52,8 @@ public class NotesListAdapter extends BaseAdapter {
 
         if(convertView==null){
             convertView=inflater.inflate(R.layout.note_row,parent,false);
-            tvNoteText = (TextView)convertView.findViewById(R.id.tvNoteText);
-            tvNoteTitle=(TextView)convertView.findViewById(R.id.tvNoteTitle);
+            tvNoteText = (TextView)convertView.findViewById(R.id.tvCastName);
+            tvNoteTitle=(TextView)convertView.findViewById(R.id.tvCastCharacter);
             ivImage=(ImageView)convertView.findViewById(R.id.noteImage);
             convertView.setTag(new NoteViewHolder(ivImage,tvNoteTitle,tvNoteText));
         }

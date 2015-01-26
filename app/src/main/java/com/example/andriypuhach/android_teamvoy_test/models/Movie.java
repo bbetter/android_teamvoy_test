@@ -204,12 +204,32 @@ public class Movie implements Serializable {
         private String tagline;
         private String overview;
         private String status;
+
         private List<Note> notes;
+        private List<CastPerson> cast;
+        private List<CrewPerson> crew;
+
+        public List<CastPerson> getCast() {
+            return cast;
+        }
+
+        public void setCast(List<CastPerson> cast) {
+            this.cast = cast;
+        }
+
+        public List<CrewPerson> getCrew() {
+            return crew;
+        }
+
+        public void setCrew(List<CrewPerson> crew) {
+            this.crew = crew;
+        }
 
         private List<Genre> genres;
         private List<Company> production_companies;
         private List<Country> production_countries;
         private List<Language> spoken_languages;
+
         private List<String> imagePathes;
 
         private String genresSimplified;
@@ -450,9 +470,6 @@ public class Movie implements Serializable {
             }
         }
 
-        /**
-         * Created by Джон on 15.01.2015.
-         */
         public static class Note implements Serializable {
             private int id;
             private String noteTitle;
@@ -489,6 +506,126 @@ public class Movie implements Serializable {
 
             public void setImagePath(String imagePath) {
                 this.imagePath = imagePath;
+            }
+        }
+
+        /**
+         * Created by andriypuhach on 26.01.15.
+         */
+        public static class CastPerson {
+            private int id;
+           // private int cast_id;
+            private String character;
+            private String name;
+            private String order;
+            private String profile_path;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+         /*   public int getCast_id() {
+                return cast_id;
+            }
+
+            public void setCast_id(int cast_id) {
+                this.cast_id = cast_id;
+            }
+*/
+            public String getCharacter() {
+                return character;
+            }
+
+            public void setCharacter(String character) {
+                this.character = character;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getOrder() {
+                return order;
+            }
+
+            public void setOrder(String order) {
+                this.order = order;
+            }
+
+            public String getProfile_path() {
+                return profile_path;
+            }
+
+            public void setProfile_path(String profile_path) {
+                this.profile_path = profile_path;
+            }
+        }
+
+        /**
+         * Created by andriypuhach on 26.01.15.
+         */
+        public static class CrewPerson {
+            private int id;
+          //  private int credit_id;
+            private String department;
+            private String job;
+            private String name;
+            private String profile_path;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+         /*   public int getCredit_id() {
+                return credit_id;
+            }
+
+            public void setCredit_id(int credit_id) {
+                this.credit_id = credit_id;
+            }*/
+
+            public String getDepartment() {
+                return department;
+            }
+
+            public void setDepartment(String department) {
+                this.department = department;
+            }
+
+            public String getJob() {
+                return job;
+            }
+
+            public void setJob(String job) {
+                this.job = job;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getProfile_path() {
+                return profile_path;
+            }
+
+            public void setProfile_path(String profile_path) {
+                this.profile_path = profile_path;
             }
         }
     }

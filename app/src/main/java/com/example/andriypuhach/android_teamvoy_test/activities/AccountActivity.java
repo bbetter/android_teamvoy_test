@@ -294,7 +294,6 @@ public class AccountActivity extends FragmentActivity {
         mPrefs = getPreferences(MODE_PRIVATE);
         placeView = (TextView) findViewById(R.id.tvPlace);
         fbPhotoFlipper = (ViewFlipper) findViewById(R.id.fbPhotoFlipper);
-        initilizeMap();
         final TextView textView = new TextView(getApplicationContext());
         textView.setText("Ваші дані були змінені, бажаєте синхронізуватись із фейсбуком?");
         if (Session.getActiveSession().isOpened()) {
