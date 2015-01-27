@@ -44,7 +44,6 @@ public class TheMovieDBAccount {
 
         }
     };
-
     private static Callback<JsonElement> getNewSessionCallBack= new Callback<JsonElement>() {
         @Override
         public void success(JsonElement jsonElement, Response response) {

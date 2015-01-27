@@ -26,6 +26,9 @@ import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ public class DetailsActivity extends Activity {
                         menu.add("Delete");
                         menu.add("Edit");
                         break;
+
                     default:
 
                 }
@@ -150,34 +154,42 @@ public class DetailsActivity extends Activity {
             viewFlipper.addView(view);
             ImageLoader.getInstance().displayImage(Movie.transformPathToURL(path, Movie.ImageSize.W600),view);
         }
-
-            RestClient.getApi().getCastNCrew(movie.getId(),new Callback<CastNCrewResult>() {
+            Thread thread=new Thread(new Runnable() {
                 @Override
-                public void success(CastNCrewResult castNCrewResult, Response response) {
-
-                  movie.getDetails().setCast(castNCrewResult.getCast());
-                  movie.getDetails().setCrew(castNCrewResult.getCrew());
-                    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
-                    detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
-                    detailsListView.setAdapter(detailsListAdapter);
-                    registerForContextMenu(detailsListView);
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    movie.getDetails().setCast(new ArrayList<Movie.Details.CastPerson>());
-                    movie.getDetails().setCrew(new ArrayList<Movie.Details.CrewPerson>());
-                    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
-                    detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
-                    detailsListAdapter.setMovie(movie);
-                    detailsListView.setAdapter(detailsListAdapter);
-                    registerForContextMenu(detailsListView);
+                public void run() {
+                    List<Movie.Details.Video> videos = new Gson().fromJson(RestClient.getApi().getVideos(movie.getId()).getAsJsonObject().get("results"),new TypeToken<List<Movie.Details.Video>>(){}.getType());
+                    CastNCrewResult castNCrewResult =RestClient.getApi().getCastNCrew(movie.getId());
+                    movie.getDetails().setCast(castNCrewResult.getCast());
+                    movie.getDetails().setCrew(castNCrewResult.getCrew());
+                    movie.getDetails().setVideos(videos);
                 }
             });
+                  thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-
-
-      }
+    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
+    detailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                if(groupPosition==3){
+                    Movie.Details.Video video=movie.getDetails().getVideos().get(childPosition);
+                    final Intent intent= new Intent(DetailsActivity.this,YoutubeVideo.class);
+                    intent.putExtra("VideoTitle",video.getName());
+                    intent.putExtra("VideoKey",video.getKey());
+                    startActivity(intent);
+                    return true;
+                }
+                return false;
+            }
+        });
+                  detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
+                  detailsListView.setAdapter(detailsListAdapter);
+                    registerForContextMenu(detailsListView);
+              }
 
     /**
      * метод перетворює URI отримане при виборі із галереї зображень у абсолютний шлях до цього зображення

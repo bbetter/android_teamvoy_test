@@ -27,29 +27,24 @@ public interface RetrofitMovieService {
 
     @GET("/movie/{thing}?api_key=" + apiKey)
     public void getMovies(@Path("thing") String thing, @Query("page") int page, Callback<MovieRequestResult> movieRes);
-
     @GET("/movie/{id}?api_key=" + apiKey)
     public void getDetails(@Path("id") int id, Callback<Movie.Details> det);
     @GET("/movie/{id}/credits?api_key="+apiKey)
-    public void getCastNCrew(@Path("id")int id,Callback<CastNCrewResult> castncrew);
+    public CastNCrewResult getCastNCrew(@Path("id")int id);
     @GET("/movie/{id}/images?api_key=" + apiKey)
     public void getImagePathes(@Path("id") int id, Callback<JsonElement> imRes);
-
+    @GET("/movie/{id}/videos?api_key=" + apiKey)
+    public JsonElement getVideos(@Path("id") int id);
     @GET("/search/movie?api_key=" + apiKey)
     public void search(@Query("query") String query, @Query("page") int page, Callback<MovieRequestResult> movieRes);
-
     @GET("/authentication/token/new?api_key=" + apiKey)
     public void getToken(Callback<JsonElement> jsonResult);
-
     @GET("/authentication/token/validate_with_login?api_key=" + apiKey)
     public void validateToken(@Query("request_token") String token, @Query("username") String username, @Query("password") String password, Callback<JsonElement> jsonResult);
-
     @GET("/authentication/session/new?api_key=" + apiKey)
     public void getNewSession(@Query("request_token") String token, Callback<JsonElement> jsonResult);
-
     @GET("/account?api_key=" + apiKey)
     public void getAccountInfo(@Query("session_id") String sessionId, Callback<JsonElement> jsonResult);
-
     @GET("/account/100/watchlist/movies?api_key=" + apiKey)
     public void getWatchListMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/account/100/favorite/movies?api_key=" + apiKey)

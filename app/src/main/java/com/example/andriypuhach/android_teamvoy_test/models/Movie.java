@@ -208,6 +208,7 @@ public class Movie implements Serializable {
         private List<Note> notes;
         private List<CastPerson> cast;
         private List<CrewPerson> crew;
+        private List<Video> videos;
 
         public List<CastPerson> getCast() {
             return cast;
@@ -384,6 +385,14 @@ public class Movie implements Serializable {
 
         public void setCompaniesSimplified(String companiesSimplified) {
             this.companiesSimplified = companiesSimplified;
+        }
+
+        public List<Video> getVideos() {
+            return videos;
+        }
+
+        public void setVideos(List<Video> videos) {
+            this.videos = videos;
         }
 
         public class Language implements Serializable {
@@ -626,6 +635,49 @@ public class Movie implements Serializable {
 
             public void setProfile_path(String profile_path) {
                 this.profile_path = profile_path;
+            }
+        }
+
+        /**
+         * Created by andriypuhach on 27.01.15.
+         */
+        public static class Video {
+            public final static String YOUTUBE_API_KEY="AIzaSyDuoKjXOkrcIABTNCwhnVdZye4tQ0yHtBE";
+            String key;
+            String name;
+            String site;
+            String type;
+
+            public String getKey() {
+                return key;
+            }
+
+            public void setKey(String key) {
+                this.key = key;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getSite() {
+                return site;
+            }
+
+            public void setSite(String site) {
+                this.site = site;
+            }
+
+            public String getType() {
+                return type;
+            }
+
+            public void setType(String type) {
+                this.type = type;
             }
         }
     }

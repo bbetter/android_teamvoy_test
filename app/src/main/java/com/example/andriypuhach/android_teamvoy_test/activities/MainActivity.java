@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -650,9 +651,13 @@ public class MainActivity extends Activity {
                     final EditText edName = new EditText(getApplicationContext());
                     edName.setHint("nickname");
                     edName.setText(nick);
+                    edName.setSingleLine();
+                    edName.setImeOptions(EditorInfo.IME_ACTION_NEXT);
                     final EditText edPass = new EditText(getApplicationContext());
                     edPass.setText(pass);
                     edPass.setHint("password");
+                    edPass.setSingleLine();
+
                     edPass.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     edPass.setTransformationMethod(PasswordTransformationMethod.getInstance());
 

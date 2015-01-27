@@ -13,6 +13,9 @@ import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubeThumbnailLoader;
+import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.text.NumberFormat;
@@ -25,11 +28,12 @@ import java.util.List;
 public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     public final static int VIEW_TYPE_INFO = 0;
-    public final static int VIEW_TYPE_NOTES = 3;
+    public final static int VIEW_TYPE_NOTES = 4;
     public final static int VIEW_TYPE_CAST = 1;
     public final static int VIEW_TYPE_CREW = 2;
+    public final static int VIEW_TYPE_VIDEO = 3;
 
-    private final String [] headers={"Інформація","Знімались","Знімали","Нотатки"};
+    private final String [] headers={"Інформація","Знімались","Знімали","Відео","Нотатки"};
     private LayoutInflater inflater;
     private Context context;
     private Movie movie;
@@ -161,6 +165,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     }
                 }
                 break;
+                case VIEW_TYPE_VIDEO:{
+                    if(convertView==null || ((ViewHolder)convertView.getTag()).youTubeThumbnailView==null){
+                        convertView=inflater.inflate(R.layout.video_row,parent,false);
+                        holder.youTubeThumbnailView=(YouTubeThumbnailView)convertView.findViewById(R.id.ytThumbnailView);
+                        holder.tvVideoTitle=(TextView) convertView.findViewById(R.id.tvVideoTitle);
+                    }
+                    else{
+                        holder=(ViewHolder)convertView.getTag();
+                    }
+
+                }
             }
             convertView.setTag(holder);
 
@@ -201,13 +216,28 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 ImageLoader.getInstance().displayImage(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W75),holder.ivCrewImage);
             }
             break;
+            case VIEW_TYPE_VIDEO:{
+                final Movie.Details.Video video= movie.getDetails().getVideos().get(childPosition);
+                holder.tvVideoTitle.setText(video.getName());
+                holder.youTubeThumbnailView.initialize(Movie.Details.Video.YOUTUBE_API_KEY,new YouTubeThumbnailView.OnInitializedListener() {
+                    @Override
+                    public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                        youTubeThumbnailLoader.setVideo(video.getKey());
+                    }
+
+                    @Override
+                    public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
+
+                    }
+                });
+            }
         }
         return convertView;
     }
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-        if(groupPosition==VIEW_TYPE_NOTES)
+        if(groupPosition==VIEW_TYPE_NOTES || groupPosition==VIEW_TYPE_VIDEO)
         return true;
         else return false;
     }
@@ -234,6 +264,9 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
         TextView tvCrewDepartmentNJob;
         TextView tvCrewName;
         ImageView ivCrewImage;
+
+        TextView tvVideoTitle;
+        YouTubeThumbnailView youTubeThumbnailView;
 
     }
 }
