@@ -202,18 +202,23 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
             case VIEW_TYPE_CAST:{
                 List<Movie.Details.CastPerson> cast=movie.getDetails().getCast();
-                holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
-                holder.tvCastName.setText(cast.get(childPosition).getName());
-                ImageLoader.getInstance().displayImage(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W75),holder.ivCastImage);
+                if(cast.size()>0) {
+                    holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
+                    holder.tvCastName.setText(cast.get(childPosition).getName());
+                    ImageLoader.getInstance().displayImage(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W75), holder.ivCastImage);
+                }
             }
             break;
             case VIEW_TYPE_CREW:{
                 List<Movie.Details.CrewPerson> crew=movie.getDetails().getCrew();
-                String dep=crew.get(childPosition).getDepartment();
-                String job=crew.get(childPosition).getJob();
-                holder.tvCrewDepartmentNJob.setText(dep+"\n'"+job+"'");
-                holder.tvCrewName.setText(crew.get(childPosition).getName());
-                ImageLoader.getInstance().displayImage(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W75),holder.ivCrewImage);
+                if(crew.size()>0) {
+                    String dep = crew.get(childPosition).getDepartment();
+                    String job = crew.get(childPosition).getJob();
+                    holder.tvCrewDepartmentNJob.setText(dep + "\n'" + job + "'");
+                    holder.tvCrewName.setText(crew.get(childPosition).getName());
+                    ImageLoader.getInstance().displayImage(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W75), holder.ivCrewImage);
+                }
+
             }
             break;
             case VIEW_TYPE_VIDEO:{

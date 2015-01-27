@@ -169,18 +169,21 @@ public class DetailsActivity extends Activity {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if(groupPosition==3){
-                    Movie.Details.Video video=movie.getDetails().getVideos().get(childPosition);
-                    final Intent intent= new Intent(DetailsActivity.this,YoutubeVideo.class);
-                    intent.putExtra("VideoKey",video.getKey());
-                    startActivity(intent);
-                    return true;
+                    if(movie.getDetails().getVideos().size()>0) {
+                        Movie.Details.Video video = movie.getDetails().getVideos().get(childPosition);
+                        final Intent intent = new Intent(DetailsActivity.this, YoutubeVideo.class);
+                        intent.putExtra("VideoKey", video.getKey());
+                        startActivity(intent);
+
+                        return true;
+                    }
                 }
                 return false;
             }
         });
                   detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
                   detailsListView.setAdapter(detailsListAdapter);
-                    registerForContextMenu(detailsListView);
+                  registerForContextMenu(detailsListView);
               }
 
     /**
