@@ -69,7 +69,7 @@ public class EditNoteDialog extends Dialog {
                 newNote.setNoteText(text);
                 newNote.setImagePath(editImagePath);
                 MovieDatabaseHelper database=new MovieDatabaseHelper(activity);
-                database.updateNote(newNote);
+                database.updateNote(activity.getApplicationContext(),newNote);
                 dismiss();
             }
         });

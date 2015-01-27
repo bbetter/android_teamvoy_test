@@ -61,9 +61,11 @@ public class CreateNoteDialog extends Dialog {
                 newNote.setNoteTitle(title);
                 newNote.setImagePath(createImagePath);
                 MovieDatabaseHelper dbHelper= new MovieDatabaseHelper(activity);
-                dbHelper.insertNote(movie, newNote);
+                dbHelper.insertNote(activity.getApplicationContext(),movie, newNote);
                 dismiss();
             }
         });
+
     }
+
 }

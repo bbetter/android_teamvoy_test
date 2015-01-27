@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
  <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     android:orientation="vertical">
-    <ViewFlipper
-        android:id="@+id/viewFlipper"
+
+    <com.daimajia.slider.library.SliderLayout
+        android:id="@+id/slider"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </ViewFlipper>
+        custom:pager_animation="Background2Foreground"
+        custom:auto_cycle="true"
+        custom:indicator_visibility="visible"
+        custom:pager_animation_span="1100"
+        android:layout_height="200dp"/>
 
     <ExpandableListView
         android:id="@+id/detailsList"

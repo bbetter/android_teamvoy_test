@@ -20,6 +20,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import com.daimajia.slider.library.SliderLayout;
+import com.daimajia.slider.library.SliderTypes.BaseSliderView;
+import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.Serializer;
@@ -52,13 +55,14 @@ import java.util.Locale;
  */
 public class AccountActivity extends FragmentActivity {
     private GoogleMap googleMap;
-    private float lastX;
-    private ViewFlipper fbPhotoFlipper;
+
     private SharedPreferences mPrefs;
     private TextView placeView;
     private Account account;
     private EditAccountDialog edAccDialog;
     private ScrollView scView;
+    private SliderLayout slider;
+
 
     private String fetchCityNameUsingGoogleMap(Location lc) {
         String googleMapUrl = "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + lc.getLatitude() + ","
@@ -136,13 +140,16 @@ public class AccountActivity extends FragmentActivity {
                 if (i != thWorks.size() - 1)
                     works.append("------------------------");
             }
-            fbPhotoFlipper.removeAllViews();
+            slider.removeAllSliders();
             for (String str : pathes) {
-                ImageView view = new ImageView(getApplicationContext());
-                view.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                fbPhotoFlipper.addView(view);
-                Picasso.with(getApplicationContext()).load(str).error(R.drawable.failed_to_load).into(view);
+                TextSliderView view = new TextSliderView(getApplicationContext());
+                    view.image(str)
+                        .description("Facebook Photos")
+                        .error(R.drawable.failed_to_load)
+                        .setScaleType(BaseSliderView.ScaleType.Fit);
+                slider.addSlider(view);
             }
+
             workView.setText(works.toString());
         }
     }
@@ -292,7 +299,9 @@ public class AccountActivity extends FragmentActivity {
         scView = (ScrollView) findViewById(R.id.scrollView);
         mPrefs = getPreferences(MODE_PRIVATE);
         placeView = (TextView) findViewById(R.id.tvPlace);
-        fbPhotoFlipper = (ViewFlipper) findViewById(R.id.fbPhotoFlipper);
+        slider=(SliderLayout)findViewById(R.id.fbPhotoSlider);
+        slider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+        slider.setDuration(8000);
         final TextView textView = new TextView(getApplicationContext());
         textView.setText("Ваші дані були змінені, бажаєте синхронізуватись із фейсбуком?");
         if (Session.getActiveSession().isOpened()) {
@@ -405,29 +414,4 @@ public class AccountActivity extends FragmentActivity {
         initilizeMap();
     }
 
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                lastX = event.getX();
-                break;
-            case MotionEvent.ACTION_UP:
-                float currentX = event.getX();
-                if (lastX < currentX) {
-                    if (fbPhotoFlipper.getDisplayedChild() == 0)
-                        break;
-                    fbPhotoFlipper.setInAnimation(getApplicationContext(), R.anim.slide_in_from_left);
-                    fbPhotoFlipper.setOutAnimation(getApplicationContext(), R.anim.slide_out_to_right);
-                    fbPhotoFlipper.showNext();
-                }
-                if (lastX > currentX) {
-                    if (fbPhotoFlipper.getDisplayedChild() == 1)
-                        break;
-                    fbPhotoFlipper.setInAnimation(getApplicationContext(), R.anim.slide_in_from_right);
-                    fbPhotoFlipper.setOutAnimation(getApplicationContext(), R.anim.slide_out_to_left);
-                    fbPhotoFlipper.showPrevious();
-                }
-                break;
-        }
-        return false;
-    }
 }

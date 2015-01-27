@@ -10,13 +10,16 @@ import android.provider.MediaStore;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import com.daimajia.slider.library.Animations.DescriptionAnimation;
+import com.daimajia.slider.library.SliderLayout;
+import com.daimajia.slider.library.SliderTypes.BaseSliderView;
+import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsExpandableListAdapter;
@@ -32,12 +35,10 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class DetailsActivity extends Activity {
-    //region viewFlipper variables
-    private float lastX;
-    private ViewFlipper viewFlipper;
-    //endregion
     private ExpandableListView detailsListView;
     private DetailsExpandableListAdapter detailsListAdapter;
+
+    private SliderLayout slider;
 
     private CreateNoteDialog cdd ;
     private EditNoteDialog edd;
@@ -85,17 +86,16 @@ public class DetailsActivity extends Activity {
         if(item.getTitle()=="Edit"){
             edd=new EditNoteDialog(DetailsActivity.this);
             edd.setTitle("Редагувати нотатку");
+
             edd.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
                     movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
                     detailsListAdapter.setMovie(movie);
-                    detailsListView.setVisibility(View.INVISIBLE);
-                    detailsListView.setVisibility(View.VISIBLE);
-                    Toast.makeText(getApplicationContext(),"Нотатку відредаговано",Toast.LENGTH_SHORT).show();
                 }
             });
             edd.setEditedNote(selectedNote);
+            edd.setCanceledOnTouchOutside(true);
             edd.show();
         }
         return true;
@@ -118,11 +118,9 @@ public class DetailsActivity extends Activity {
                 public void onDismiss(DialogInterface dialog) {
                     movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
                     detailsListAdapter.setMovie(movie);
-                    detailsListView.invalidateViews();
-                    detailsListView.scrollBy(0,0);
-                    Toast.makeText(getApplicationContext(),"Нотатку додано",Toast.LENGTH_SHORT).show();
                 }
             });
+            cdd.setCanceledOnTouchOutside(true);
             cdd.show();
         }
         return true;
@@ -136,18 +134,21 @@ public class DetailsActivity extends Activity {
         final Intent intent = getIntent();
         movie = (Movie) intent.getSerializableExtra("Movie");
         movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
-        viewFlipper = (ViewFlipper)findViewById(R.id.viewFlipper);
-        viewFlipper.removeAllViews();
+        slider = (SliderLayout)findViewById(R.id.slider);
+       // slider.removeAllViews();
         List<String> lPathes=movie.getDetails().getImagePathes();
         String [] iPathes=new String[lPathes.size()];
         lPathes.toArray(iPathes);
         for(String path : iPathes){
-            ImageView view = new ImageView(getApplicationContext());
-            view.setScaleType(ImageView.ScaleType.FIT_XY);
-            viewFlipper.addView(view);
-            Picasso.with(getApplicationContext()).load(Movie.transformPathToURL(path,Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(view);
-
+            TextSliderView view = new TextSliderView(this);
+                view.description(movie.getTitle())
+                    .image(Movie.transformPathToURL(path, Movie.ImageSize.W600))
+                    .error(R.drawable.failed_to_load)
+                    .setScaleType(BaseSliderView.ScaleType.Fit);
+            slider.addSlider(view);
         }
+        slider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+        slider.setDuration(8000);
             Thread thread=new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -224,43 +225,17 @@ public class DetailsActivity extends Activity {
                 case CreateNoteDialog.SELECT_PHOTO_CREATE: {
                     CreateNoteDialog.createImagePath = null;
                     CreateNoteDialog.createImagePath=filePath;
-                    Picasso.with(getApplicationContext()).load("file:///"+filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
 
                 }
                 break;
                 case EditNoteDialog.SELECT_PHOTO_EDIT: {
                     EditNoteDialog.editImagePath = filePath;
-                    Picasso.with(getApplicationContext()).load("file:///"+filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
                 }
                 break;
             }
         }
-    }
-
-    public boolean onTouchEvent(MotionEvent touchevent) {
-        switch (touchevent.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                lastX = touchevent.getX();
-                break;
-            case MotionEvent.ACTION_UP:
-                float currentX = touchevent.getX();
-                if (lastX < currentX) {
-                    if (viewFlipper.getDisplayedChild() == 0)
-                        break;
-                    viewFlipper.setInAnimation(this, R.anim.slide_in_from_left);
-                    viewFlipper.setOutAnimation(this, R.anim.slide_out_to_right);
-                    viewFlipper.showNext();
-                }
-                if (lastX > currentX) {
-                    if (viewFlipper.getDisplayedChild() == 1)
-                        break;
-                    viewFlipper.setInAnimation(this, R.anim.slide_in_from_right);
-                    viewFlipper.setOutAnimation(this, R.anim.slide_out_to_left);
-                    viewFlipper.showPrevious();
-                }
-                break;
-        }
-        return false;
     }
 }
 

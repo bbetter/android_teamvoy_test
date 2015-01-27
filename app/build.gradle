@@ -13,7 +13,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -22,12 +22,14 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'joda-time:joda-time:2.7'
+    compile "com.android.support:support-v4:+"
+    compile 'com.google.android.gms:play-services-maps:6.5.87'
     compile 'com.squareup.retrofit:retrofit:1.6.1'
     compile 'com.squareup.okhttp:okhttp:+'
     compile 'com.squareup.okhttp:okhttp-urlconnection:+'
     compile 'com.facebook.android:facebook-android-sdk:+'
-    compile 'com.google.android.gms:play-services-maps:6.5.87'
     compile 'com.squareup.picasso:picasso:2.4.0'
-    compile files('libs/YouTubeAndroidPlayerApi.jar')
+    compile 'joda-time:joda-time:2.7'
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.daimajia.slider:library:1.1.2@aar'
 }

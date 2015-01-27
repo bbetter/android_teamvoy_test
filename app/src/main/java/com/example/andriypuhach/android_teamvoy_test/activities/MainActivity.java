@@ -46,8 +46,14 @@ import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,7 +231,6 @@ public class MainActivity extends Activity {
         RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,new Callback<MovieRequestResult>() {
             @Override
             public void success(MovieRequestResult movieRequestResult, Response response) {
-                listView.setVisibility(View.VISIBLE);
                 if (movieRequestResult.getResults() != null) {
                     int cp = movieRequestResult.getPage();
                     totalPages = movieRequestResult.getTotal_pages();
@@ -275,16 +280,13 @@ public class MainActivity extends Activity {
         @Override
         public void onTabChanged(String tabId) {
             currentTask = tabId;
-            if (!currentTask.equals("favorite")) {
-                if(!currentTask.equals("watchlist")) {
-                    refreshListByTab();
-                }
-                else{
-
-                    refreshWatchList();
-                }
-            } else {
-                refreshFavorites();
+            switch(currentTask){
+                case "favorite":refreshFavorites();
+                    break;
+                case "watchlist":refreshWatchList();
+                    break;
+                default:refreshListByTab();
+                    break;
             }
         }
     };
@@ -302,7 +304,8 @@ public class MainActivity extends Activity {
                 }
             }
             else{
-                RestClient.getApi().setFavorite("movie",selectedMovie.getId(),true,RestClient.sessionId,new Callback<JsonElement>() {
+                JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':true}",JsonObject.class);
+                RestClient.getApi().setFavorite(object,RestClient.sessionId,new Callback<JsonElement>() {
                     @Override
                     public void success(JsonElement jsonElement, Response response) {
                         Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
@@ -316,7 +319,8 @@ public class MainActivity extends Activity {
             }
         }
         else if(item.getTitle()=="Add To Watchlist"){
-            RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),true, RestClient.sessionId,new Callback<JsonElement>() {
+            JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':true}",JsonObject.class);
+            RestClient.getApi().setWatchlist(object, RestClient.sessionId,new Callback<JsonElement>() {
                 @Override
                 public void success(JsonElement jsonElement, Response response) {
                     Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
@@ -341,14 +345,16 @@ public class MainActivity extends Activity {
             if(!tmbdConnected) {
                 removeById(selectedMovie.getId(), Movie.favorites);
                 Movie.saveFavorites();
-
             }
             else{
                 if(currentTask=="watchlist"){
-                    RestClient.getApi().setWatchlist("movie",selectedMovie.getId(),false, RestClient.sessionId,new Callback<JsonElement>() {
+
+                    JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
+                    RestClient.getApi().setWatchlist(object, RestClient.sessionId,new Callback<JsonElement>() {
                         @Override
                         public void success(JsonElement jsonElement, Response response) {
-
+                            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
+                            refreshWatchList();
                         }
 
                         @Override
@@ -358,10 +364,12 @@ public class MainActivity extends Activity {
                     });
                 }
                 else {
-                    RestClient.getApi().setFavorite("movie",selectedMovie.getId(),false, RestClient.sessionId,new Callback<JsonElement>() {
+                    JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}",JsonObject.class);
+                    RestClient.getApi().setFavorite(object, RestClient.sessionId,new Callback<JsonElement>() {
                         @Override
                         public void success(JsonElement jsonElement, Response response) {
-
+                            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
+                            refreshFavorites();
                         }
 
                         @Override
@@ -372,8 +380,8 @@ public class MainActivity extends Activity {
                 }
 
             }
-            refreshFavorites();
-            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
+
+
         }
         else if(item.getTitle()=="Post To Facebook"){
             FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
@@ -414,7 +422,6 @@ public class MainActivity extends Activity {
      * оновлює список улюблених фільмів, або із бази даних або із сайту themoviedb.org
      */
     public void refreshFavorites() {
-        listView.setVisibility(View.VISIBLE);
         if(!tmbdConnected) {
             Movie.refreshFavorites();
             if (Movie.favorites != null) {
@@ -433,7 +440,6 @@ public class MainActivity extends Activity {
             RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,new Callback<MovieRequestResult>() {
                 @Override
                 public void success(MovieRequestResult movieRequestResult, Response response) {
-                    listView.setVisibility(View.VISIBLE);
                     if (movieRequestResult.getResults() != null) {
                         int cp = movieRequestResult.getPage();
                         totalPages = movieRequestResult.getTotal_pages();

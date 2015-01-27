@@ -49,13 +49,8 @@ public interface RetrofitMovieService {
     public void getWatchListMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/account/100/favorite/movies?api_key=" + apiKey)
     public void getFavoriteMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
-    @FormUrlEncoded
     @POST("/account/100/favorite?api_key="+apiKey)
-    public void setFavorite(@Field("media_type")String type,@Field("media_id")int id,@Field("favorite")boolean favorite, @Query("session_id") String sessionId,Callback<JsonElement> res);
-    @FormUrlEncoded
+    public void  setFavorite(@Body JsonObject body, @Query("session_id") String sessionId,Callback<JsonElement> res);
     @POST("/account/100/watchlist?api_key="+apiKey)
-    public void  setWatchlist(@Field("media_type")String type,@Field("media_id")int id,@Field("watchlist")boolean watchlist, @Query("session_id") String sessionId,Callback<JsonElement>res);
-    //поки що не використовується
-    @GET("/movie/{id}/account_states?api_key="+apiKey)
-    public void getMovieByAccountInfo(@Path("id") int id);
+    public void  setWatchlist(@Body JsonObject body, @Query("session_id") String sessionId,Callback<JsonElement> res);
 }

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 
@@ -122,7 +123,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
-    public void insertNote(Movie movie,Movie.Details.Note note){
+
+    public void insertNote(Context context,Movie movie,Movie.Details.Note note){
         String [] movieValues={String.valueOf(movie.getId()),
                 movie.getOriginal_title()!=null?quotate(movie.getOriginal_title()):null,
                 movie.getTitle()!=null?quotate(movie.getTitle()):null,
@@ -161,9 +163,11 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
         }
         finally {
             getWritableDatabase().execSQL(query);
+            Toast.makeText(context,"Нотатку додано",Toast.LENGTH_SHORT).show();
         }
+
     }
-    public void updateNote(Movie.Details.Note note){
+    public void updateNote(Context context,Movie.Details.Note note){
         String query=UPDATE_QUERY
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
                 .replace("<SETS>",NOTE_TITLE_COLUMN+"="+quotate(note.getNoteTitle())
@@ -171,6 +175,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                         +","+NOTE_IMAGEPATH_COLUMN+"="+quotate(note.getImagePath())
                         +" where _id="+note.getId());
         this.getWritableDatabase().execSQL(query);
+        Toast.makeText(context, "Нотатку відредаговано", Toast.LENGTH_SHORT).show();
     }
     public List<Movie.Details.Note> selectAllNotes() {
         String query = SELECT_QUERY
@@ -185,6 +190,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             note.setNoteText(cursor.getString(3));
             note.setImagePath(cursor.getString(4));
             notes.add(note);
+
         }
         return notes;
     }
