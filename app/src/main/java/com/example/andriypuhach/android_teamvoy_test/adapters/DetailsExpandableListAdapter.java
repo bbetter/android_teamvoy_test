@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
@@ -16,10 +15,9 @@ import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -198,14 +196,14 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 List<Movie.Details.Note> notes=movie.getDetails().getNotes();
                 holder.tvNoteTitle.setText(notes.get(childPosition).getNoteTitle());
                 holder.tvNoteText.setText(notes.get(childPosition).getNoteText());
-                ImageLoader.getInstance().displayImage("file:///"+notes.get(childPosition).getImagePath(),holder.ivNoteImage);
+                Picasso.with(context).load("file:///"+notes.get(childPosition).getImagePath()).into(holder.ivNoteImage);
                 break;
             case VIEW_TYPE_CAST:{
                 List<Movie.Details.CastPerson> cast=movie.getDetails().getCast();
                 if(cast.size()>0) {
                     holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
                     holder.tvCastName.setText(cast.get(childPosition).getName());
-                    ImageLoader.getInstance().displayImage(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W75), holder.ivCastImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).into(holder.ivCastImage);
                 }
             }
             break;
@@ -216,7 +214,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     String job = crew.get(childPosition).getJob();
                     holder.tvCrewDepartmentNJob.setText(dep + "\n'" + job + "'");
                     holder.tvCrewName.setText(crew.get(childPosition).getName());
-                    ImageLoader.getInstance().displayImage(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W75), holder.ivCrewImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).into(holder.ivCrewImage);
                 }
 
             }

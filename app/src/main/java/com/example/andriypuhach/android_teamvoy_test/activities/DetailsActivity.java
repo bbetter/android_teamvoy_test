@@ -27,7 +27,7 @@ import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -145,7 +145,8 @@ public class DetailsActivity extends Activity {
             ImageView view = new ImageView(getApplicationContext());
             view.setScaleType(ImageView.ScaleType.FIT_XY);
             viewFlipper.addView(view);
-            ImageLoader.getInstance().displayImage(Movie.transformPathToURL(path, Movie.ImageSize.W600),view);
+            Picasso.with(getApplicationContext()).load(Movie.transformPathToURL(path,Movie.ImageSize.W600)).into(view);
+
         }
             Thread thread=new Thread(new Runnable() {
                 @Override
@@ -216,21 +217,20 @@ public class DetailsActivity extends Activity {
         }
         else
         if(data!=null) {
+            Uri selectedImage = data.getData();
+            String filePath = getImagePath(selectedImage);
             switch (requestCode) {
 
                 case CreateNoteDialog.SELECT_PHOTO_CREATE: {
                     CreateNoteDialog.createImagePath = null;
-                    Uri selectedImage = data.getData();
-                    String filePath = getImagePath(selectedImage);
                     CreateNoteDialog.createImagePath=filePath;
-                    ImageLoader.getInstance().displayImage("file:///"+filePath,CreateNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///"+filePath).into(CreateNoteDialog.imageView);
+
                 }
                 break;
                 case EditNoteDialog.SELECT_PHOTO_EDIT: {
-                    Uri selectedImage = data.getData();
-                    String filePath = getImagePath(selectedImage);
                     EditNoteDialog.editImagePath = filePath;
-                    ImageLoader.getInstance().displayImage("file:///"+filePath,EditNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///"+filePath).into(EditNoteDialog.imageView);
                 }
                 break;
             }

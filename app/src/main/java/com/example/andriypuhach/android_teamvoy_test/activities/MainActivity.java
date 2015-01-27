@@ -48,8 +48,6 @@ import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -738,7 +736,6 @@ public class MainActivity extends Activity {
             }
         });
         listView = (ListView) findViewById(R.id.listView);
-        listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
         listView.setOnItemClickListener(detailsListener);
         registerForContextMenu(listView);
         tabs = (TabHost) findViewById(R.id.tabhost);

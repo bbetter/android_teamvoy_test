@@ -33,9 +33,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nostra13.universalimageloader.core.ImageLoader;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.picasso.Picasso;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -141,8 +141,7 @@ public class AccountActivity extends FragmentActivity {
                 ImageView view = new ImageView(getApplicationContext());
                 view.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 fbPhotoFlipper.addView(view);
-
-                ImageLoader.getInstance().displayImage(str, view);
+                Picasso.with(getApplicationContext()).load(str).into(view);
             }
             workView.setText(works.toString());
         }

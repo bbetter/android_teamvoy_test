@@ -12,10 +12,7 @@ import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.*;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.squareup.picasso.Picasso;
 
 
 import org.joda.time.DateTime;
@@ -27,20 +24,10 @@ public class MovieListAdapter extends BaseAdapter {
     ArrayList<Movie> movies;
     LayoutInflater inflater;
     ViewHolder holder;
-    DisplayImageOptions options;
 
     public MovieListAdapter(Context cntxt) {
         context = cntxt;
         inflater = LayoutInflater.from(context);
-        options = new DisplayImageOptions.Builder()
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .showImageOnFail(R.drawable.failed_to_load)
-                .imageScaleType(ImageScaleType.EXACTLY)
-                .bitmapConfig(Bitmap.Config.ARGB_8888)
-                .resetViewBeforeLoading(true)
-                .build();
-        ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(context));
     }
 
     public void setMovies(ArrayList<Movie> mv) {
@@ -81,7 +68,7 @@ public class MovieListAdapter extends BaseAdapter {
             holder = (ViewHolder) vi.getTag();
         }
         Movie item = movies.get(position);
-        ImageLoader.getInstance().displayImage(item.getPosterURL(Movie.ImageSize.W150), holder.ivPoster, options);
+        Picasso.with(context).load(item.getPosterURL(Movie.ImageSize.W150)).into(holder.ivPoster);
         DateTime releaseDate = item.getRelease_date();
         String dateYear = "";
         if (releaseDate != null && releaseDate!=DateTime.now()) {

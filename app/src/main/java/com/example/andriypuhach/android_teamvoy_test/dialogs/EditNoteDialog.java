@@ -3,19 +3,16 @@ package com.example.andriypuhach.android_teamvoy_test.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by andriypuhach on 1/16/15.
@@ -48,7 +45,8 @@ public class EditNoteDialog extends Dialog {
         noteTitle.setText(editedNote.getNoteTitle());
         noteText.setText(editedNote.getNoteText());
         editImagePath=editedNote.getImagePath();
-        ImageLoader.getInstance().displayImage("file:///"+editImagePath,imageView);
+        Picasso.with(activity.getApplicationContext()).load("file:///"+editImagePath).into(imageView);
+
 
 
         uploadButton.setOnClickListener(new View.OnClickListener() {
