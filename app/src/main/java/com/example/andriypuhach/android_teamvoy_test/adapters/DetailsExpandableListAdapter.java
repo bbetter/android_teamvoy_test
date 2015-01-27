@@ -217,19 +217,21 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
             }
             break;
             case VIEW_TYPE_VIDEO:{
-                final Movie.Details.Video video= movie.getDetails().getVideos().get(childPosition);
-                holder.tvVideoTitle.setText(video.getName());
-                holder.youTubeThumbnailView.initialize(Movie.Details.Video.YOUTUBE_API_KEY,new YouTubeThumbnailView.OnInitializedListener() {
-                    @Override
-                    public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
-                        youTubeThumbnailLoader.setVideo(video.getKey());
-                    }
+                if(movie.getDetails().getVideos().size()>0) {
+                    final Movie.Details.Video video = movie.getDetails().getVideos().get(childPosition);
+                    holder.tvVideoTitle.setText(video.getName());
+                    holder.youTubeThumbnailView.initialize(Movie.Details.Video.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
+                        @Override
+                        public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                            youTubeThumbnailLoader.setVideo(video.getKey());
+                        }
 
-                    @Override
-                    public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
+                        @Override
+                        public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
 
-                    }
-                });
+                        }
+                    });
+                }
             }
         }
         return convertView;

@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -27,16 +26,10 @@ import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 public class DetailsActivity extends Activity {
     //region viewFlipper variables
@@ -178,7 +171,6 @@ public class DetailsActivity extends Activity {
                 if(groupPosition==3){
                     Movie.Details.Video video=movie.getDetails().getVideos().get(childPosition);
                     final Intent intent= new Intent(DetailsActivity.this,YoutubeVideo.class);
-                    intent.putExtra("VideoTitle",video.getName());
                     intent.putExtra("VideoKey",video.getKey());
                     startActivity(intent);
                     return true;
