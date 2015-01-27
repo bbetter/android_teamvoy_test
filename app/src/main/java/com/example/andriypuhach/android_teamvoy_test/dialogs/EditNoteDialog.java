@@ -45,7 +45,7 @@ public class EditNoteDialog extends Dialog {
         noteTitle.setText(editedNote.getNoteTitle());
         noteText.setText(editedNote.getNoteText());
         editImagePath=editedNote.getImagePath();
-        Picasso.with(activity.getApplicationContext()).load("file:///"+editImagePath).into(imageView);
+        Picasso.with(activity.getApplicationContext()).load("file:///"+editImagePath).error(R.drawable.failed_to_load).into(imageView);
 
 
 

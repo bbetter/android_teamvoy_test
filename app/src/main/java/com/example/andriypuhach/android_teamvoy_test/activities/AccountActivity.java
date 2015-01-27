@@ -141,7 +141,7 @@ public class AccountActivity extends FragmentActivity {
                 ImageView view = new ImageView(getApplicationContext());
                 view.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 fbPhotoFlipper.addView(view);
-                Picasso.with(getApplicationContext()).load(str).into(view);
+                Picasso.with(getApplicationContext()).load(str).error(R.drawable.failed_to_load).into(view);
             }
             workView.setText(works.toString());
         }

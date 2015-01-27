@@ -196,14 +196,14 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 List<Movie.Details.Note> notes=movie.getDetails().getNotes();
                 holder.tvNoteTitle.setText(notes.get(childPosition).getNoteTitle());
                 holder.tvNoteText.setText(notes.get(childPosition).getNoteText());
-                Picasso.with(context).load("file:///"+notes.get(childPosition).getImagePath()).into(holder.ivNoteImage);
+                Picasso.with(context).load("file:///"+notes.get(childPosition).getImagePath()).error(R.drawable.failed_to_load).into(holder.ivNoteImage);
                 break;
             case VIEW_TYPE_CAST:{
                 List<Movie.Details.CastPerson> cast=movie.getDetails().getCast();
                 if(cast.size()>0) {
                     holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
                     holder.tvCastName.setText(cast.get(childPosition).getName());
-                    Picasso.with(context).load(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).into(holder.ivCastImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivCastImage);
                 }
             }
             break;
@@ -214,7 +214,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     String job = crew.get(childPosition).getJob();
                     holder.tvCrewDepartmentNJob.setText(dep + "\n'" + job + "'");
                     holder.tvCrewName.setText(crew.get(childPosition).getName());
-                    Picasso.with(context).load(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).into(holder.ivCrewImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivCrewImage);
                 }
 
             }

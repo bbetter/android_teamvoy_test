@@ -145,7 +145,7 @@ public class DetailsActivity extends Activity {
             ImageView view = new ImageView(getApplicationContext());
             view.setScaleType(ImageView.ScaleType.FIT_XY);
             viewFlipper.addView(view);
-            Picasso.with(getApplicationContext()).load(Movie.transformPathToURL(path,Movie.ImageSize.W600)).into(view);
+            Picasso.with(getApplicationContext()).load(Movie.transformPathToURL(path,Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(view);
 
         }
             Thread thread=new Thread(new Runnable() {
@@ -224,13 +224,13 @@ public class DetailsActivity extends Activity {
                 case CreateNoteDialog.SELECT_PHOTO_CREATE: {
                     CreateNoteDialog.createImagePath = null;
                     CreateNoteDialog.createImagePath=filePath;
-                    Picasso.with(getApplicationContext()).load("file:///"+filePath).into(CreateNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///"+filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
 
                 }
                 break;
                 case EditNoteDialog.SELECT_PHOTO_EDIT: {
                     EditNoteDialog.editImagePath = filePath;
-                    Picasso.with(getApplicationContext()).load("file:///"+filePath).into(EditNoteDialog.imageView);
+                    Picasso.with(getApplicationContext()).load("file:///"+filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
                 }
                 break;
             }
