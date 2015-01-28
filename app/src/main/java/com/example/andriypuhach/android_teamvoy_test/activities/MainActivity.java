@@ -94,7 +94,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
         @Override
         public void failure(RetrofitError error) {
-
+            Toast.makeText(getApplicationContext(),"Не вдалось здійснити дану операцію",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -500,7 +500,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
                                 @Override
                                 public void failure(RetrofitError error) {
-                                    Toast.makeText(getApplicationContext(),"Wrong Password,Try again!",Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(),"Can't get new session. Try again later!",Toast.LENGTH_LONG).show();
                                 }
                             });
                         }
@@ -508,14 +508,14 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
                     @Override
                     public void failure(RetrofitError error) {
-                        return ;
+                        Toast.makeText(getApplicationContext(),"Wrong Password,Try again!",Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             @Override
             public void failure(RetrofitError error) {
-                return ;
+                Toast.makeText(getApplicationContext(),"Can't get new request token. Try again later!",Toast.LENGTH_LONG).show();
             }
         });
 
@@ -747,6 +747,8 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
     @Override
     public void failure(RetrofitError error) {
+        if(!isOnline())
+        Toast.makeText(this,"Будь ласка під'єднайтесь до мережі інтернет.",Toast.LENGTH_LONG).show();
 
     }
 }
