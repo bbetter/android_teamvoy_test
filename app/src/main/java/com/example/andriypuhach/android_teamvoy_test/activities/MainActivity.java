@@ -186,6 +186,7 @@ public class MainActivity extends Activity {
      */
     void refreshList(ArrayList<Movie> movies,int currentPage,int totalPages){
         listAdapter.setMovies(movies);
+        if(movies.size()==0) currentPage=0;
         ((TextView) header.findViewById(R.id.currentPageView)).setText(currentPage + " of " + totalPages);
         if (listView.getHeaderViewsCount() == 0)
             listView.addHeaderView(header);

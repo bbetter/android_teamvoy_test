@@ -13,7 +13,7 @@ import com.google.android.youtube.player.YouTubePlayerView;
 /**
  * Created by andriypuhach on 27.01.15.
  */
-public class YoutubeVideo extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener{
+public class YoutubeVideoActivity extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener{
     private String key;
     @Override
     protected void onCreate(Bundle bundle) {

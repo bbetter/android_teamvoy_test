@@ -39,7 +39,7 @@
 
     </Spinner>
     <TabHost
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/tabhost">
         <LinearLayout

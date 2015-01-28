@@ -31,5 +31,7 @@
         android:layout_alignBottom="@+id/noteThumbnail"
         android:layout_below="@+id/tvNoteTitle"
         android:layout_toRightOf="@+id/noteThumbnail"
-        android:layout_toEndOf="@+id/noteThumbnail" />
+        android:layout_toEndOf="@+id/noteThumbnail"
+        android:ellipsize="end"
+        android:lines="4"/>
 </RelativeLayout>

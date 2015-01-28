@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         custom:pager_animation="Background2Foreground"
         custom:auto_cycle="true"
-        custom:indicator_visibility="visible"
-        custom:pager_animation_span="1100"
+        custom:indicator_visibility="invisible"
+        custom:pager_animation_span="1500"
         android:layout_height="200dp"/>
 
     <ExpandableListView

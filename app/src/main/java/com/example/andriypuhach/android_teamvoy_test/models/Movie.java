@@ -160,6 +160,7 @@ public class Movie implements Serializable {
         File file = new File(appDir, "favorites.movinf");
         if (!file.exists()) {
             try {
+                file.mkdirs();
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -172,6 +173,10 @@ public class Movie implements Serializable {
     }
     private static void serializeList(List<Movie> movies,File file){
         try {
+            if(!file.exists()) {
+                file.mkdirs();
+                file.createNewFile();
+            }
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(movies);

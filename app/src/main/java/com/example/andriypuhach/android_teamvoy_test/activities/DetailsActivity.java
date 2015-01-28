@@ -12,11 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.ImageView;
-import android.widget.Toast;
-import android.widget.ViewFlipper;
 
-import com.daimajia.slider.library.Animations.DescriptionAnimation;
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.SliderTypes.TextSliderView;
@@ -171,13 +167,22 @@ public class DetailsActivity extends Activity {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if(groupPosition==3){
-                    if(movie.getDetails().getVideos().size()>0) {
+                    if(movie.getDetails().getVideos().size()>childPosition && movie.getDetails().getVideos().size()!=0) {
                         Movie.Details.Video video = movie.getDetails().getVideos().get(childPosition);
-                        final Intent intent = new Intent(DetailsActivity.this, YoutubeVideo.class);
+                        final Intent intent = new Intent(DetailsActivity.this, YoutubeVideoActivity.class);
                         intent.putExtra("VideoKey", video.getKey());
                         startActivity(intent);
 
                         return true;
+                    }
+
+                }
+                else if(groupPosition==4){
+                    if(movie.getDetails().getNotes().size()>childPosition && movie.getDetails().getNotes().size()!=0){
+                        Movie.Details.Note note= movie.getDetails().getNotes().get(childPosition);
+                        final Intent intent = new Intent(DetailsActivity.this,NoteActivity.class);
+                        intent.putExtra("Note",note);
+                        startActivity(intent);
                     }
                 }
                 return false;
