@@ -25,23 +25,72 @@ import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class DetailsActivity extends Activity {
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+public class DetailsActivity extends Activity implements Callback<Movie.Details> {
+    enum Type{
+        VIDEOS,
+        IMAGES
+    }
+
     private ExpandableListView detailsListView;
     private DetailsExpandableListAdapter detailsListAdapter;
-
     private SliderLayout slider;
-
     private CreateNoteDialog cdd ;
     private EditNoteDialog edd;
     private Movie.Details.Note selectedNote;
     private MovieDatabaseHelper dbHelper;
     private Movie movie;
 
+    class VideoAndImagesCallback implements Callback<JsonElement>{
+        Type type;
+        public VideoAndImagesCallback(Type type){
+            this.type=type;
+        }
+        @Override
+        public void success(JsonElement jsonElement, Response response) {
+            switch(type) {
+             case VIDEOS:
+                 //отримую список відео у вигляді json масиву і конвертую у List<Movie.Details.Video>
+                 movie.getDetails().setVideos((List<Movie.Details.Video>)new Gson().fromJson(jsonElement.getAsJsonObject().get("results"),new TypeToken<List<Movie.Details.Video>>(){}.getType()));
+                break;
+             case IMAGES:
+                    JsonArray array = jsonElement.getAsJsonObject().getAsJsonArray("backdrops");
+                    List<String> backdrops = new ArrayList<>();
+                    for (int i = 0; i < array.size(); ++i) {
+                        String path = array.get(i).getAsJsonObject().get("file_path").getAsString();
+                        backdrops.add(path);
+                    }
+                    movie.getDetails().setImagePathes(backdrops);
+
+                 for(String path : backdrops){
+                     TextSliderView view = new TextSliderView(getApplicationContext());
+                     view.description(movie.getTitle())
+                             .image(Movie.transformPathToURL(path, Movie.ImageSize.W600))
+                             .error(R.drawable.failed_to_load)
+                             .setScaleType(BaseSliderView.ScaleType.Fit);
+                     slider.addSlider(view);
+                 }
+                break;
+            }
+
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+
+        }
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -49,7 +98,6 @@ public class DetailsActivity extends Activity {
 
         if(v.getId()==R.id.detailsList){
             ExpandableListView.ExpandableListContextMenuInfo info = (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
-
             int type = ExpandableListView.getPackedPositionType(info.packedPosition);
             int groupPosition = ExpandableListView.getPackedPositionGroup(info.packedPosition);
             int childPosition = ExpandableListView.getPackedPositionChild(info.packedPosition);
@@ -67,8 +115,6 @@ public class DetailsActivity extends Activity {
             }
         }
     }
-
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getTitle() == "Delete") {
@@ -96,8 +142,6 @@ public class DetailsActivity extends Activity {
         }
         return true;
     }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main,menu);
@@ -129,41 +173,12 @@ public class DetailsActivity extends Activity {
         dbHelper=new MovieDatabaseHelper(this);
         final Intent intent = getIntent();
         movie = (Movie) intent.getSerializableExtra("Movie");
-        movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
+
         slider = (SliderLayout)findViewById(R.id.slider);
-       // slider.removeAllViews();
-        List<String> lPathes=movie.getDetails().getImagePathes();
-        String [] iPathes=new String[lPathes.size()];
-        lPathes.toArray(iPathes);
-        for(String path : iPathes){
-            TextSliderView view = new TextSliderView(this);
-                view.description(movie.getTitle())
-                    .image(Movie.transformPathToURL(path, Movie.ImageSize.W600))
-                    .error(R.drawable.failed_to_load)
-                    .setScaleType(BaseSliderView.ScaleType.Fit);
-            slider.addSlider(view);
-        }
         slider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
         slider.setDuration(8000);
-            Thread thread=new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    List<Movie.Details.Video> videos = new Gson().fromJson(RestClient.getApi().getVideos(movie.getId()).getAsJsonObject().get("results"),new TypeToken<List<Movie.Details.Video>>(){}.getType());
-                    CastNCrewResult castNCrewResult =RestClient.getApi().getCastNCrew(movie.getId());
-                    movie.getDetails().setCast(castNCrewResult.getCast());
-                    movie.getDetails().setCrew(castNCrewResult.getCrew());
-                    movie.getDetails().setVideos(videos);
-                }
-            });
-                  thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
-    detailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+        detailsListView=(ExpandableListView)findViewById(R.id.detailsList);
+        detailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if(groupPosition==3){
@@ -188,10 +203,8 @@ public class DetailsActivity extends Activity {
                 return false;
             }
         });
-                  detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
-                  detailsListView.setAdapter(detailsListAdapter);
-                  registerForContextMenu(detailsListView);
-              }
+        RestClient.getApi().getDetails(movie.getId(),this);
+    }
 
     /**
      * метод перетворює URI отримане при виборі із галереї зображень у абсолютний шлях до цього зображення
@@ -241,6 +254,34 @@ public class DetailsActivity extends Activity {
                 break;
             }
         }
+    }
+
+    @Override
+    public void success(Movie.Details details, Response response) {
+        movie.setDetails(details);
+        RestClient.getApi().getImagePathes(movie.getId(),new VideoAndImagesCallback(Type.IMAGES));
+        RestClient.getApi().getVideos(movie.getId(),new VideoAndImagesCallback(Type.VIDEOS));
+        RestClient.getApi().getCastNCrew(movie.getId(),new Callback<CastNCrewResult>() {
+            @Override
+            public void success(CastNCrewResult castNCrewResult, Response response) {
+                movie.getDetails().setCast(castNCrewResult.getCast());
+                movie.getDetails().setCrew(castNCrewResult.getCrew());
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+        movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
+        detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
+        detailsListView.setAdapter(detailsListAdapter);
+        registerForContextMenu(detailsListView);
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+
     }
 }
 

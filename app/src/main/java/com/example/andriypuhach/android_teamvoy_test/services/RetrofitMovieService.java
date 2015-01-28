@@ -30,11 +30,11 @@ public interface RetrofitMovieService {
     @GET("/movie/{id}?api_key=" + apiKey)
     public void getDetails(@Path("id") int id, Callback<Movie.Details> det);
     @GET("/movie/{id}/credits?api_key="+apiKey)
-    public CastNCrewResult getCastNCrew(@Path("id")int id);
+    public void getCastNCrew(@Path("id")int id,Callback<CastNCrewResult> res);
     @GET("/movie/{id}/images?api_key=" + apiKey)
     public void getImagePathes(@Path("id") int id, Callback<JsonElement> imRes);
     @GET("/movie/{id}/videos?api_key=" + apiKey)
-    public JsonElement getVideos(@Path("id") int id);
+    public void getVideos(@Path("id") int id, Callback<JsonElement> res);
     @GET("/search/movie?api_key=" + apiKey)
     public void search(@Query("query") String query, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/authentication/token/new?api_key=" + apiKey)

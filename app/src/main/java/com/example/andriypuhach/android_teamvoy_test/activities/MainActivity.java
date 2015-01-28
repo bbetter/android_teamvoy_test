@@ -63,7 +63,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Callback<MovieRequestResult> {
     //region UI STUFF
     private TabHost tabs;
     private LoginButton facebookLoginButton;
@@ -74,6 +74,30 @@ public class MainActivity extends Activity {
 
     private UiLifecycleHelper uiHelper; //facebook helper thing
     int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
+
+
+    class AddRemoveCallback implements Callback<JsonElement>{
+        String goal;
+        boolean addRemove;
+        public AddRemoveCallback(String goal,boolean addRemove){
+            this.goal=goal;
+            this.addRemove=addRemove;
+        }
+        @Override
+        public void success(JsonElement jsonElement, Response response) {
+            Toast.makeText(getApplicationContext(),"Успішно "+((addRemove)?"додано":"видалено"),Toast.LENGTH_LONG).show();
+            if(goal.equals("watchlist") && !addRemove)
+                refreshWatchList();
+            else if(!addRemove)
+                refreshFavorites();
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+
+        }
+    }
+
 
     /**
      * метод створює заголовок списку
@@ -186,7 +210,10 @@ public class MainActivity extends Activity {
      */
     void refreshList(ArrayList<Movie> movies,int currentPage,int totalPages){
         listAdapter.setMovies(movies);
-        if(movies.size()==0) currentPage=0;
+        if(movies.size()==0) {
+            currentPage=0;
+            totalPages=0;
+        }
         ((TextView) header.findViewById(R.id.currentPageView)).setText(currentPage + " of " + totalPages);
         if (listView.getHeaderViewsCount() == 0)
             listView.addHeaderView(header);
@@ -198,25 +225,7 @@ public class MainActivity extends Activity {
      */
     void refreshListBySearch(String search) {
         if(currentSearchType=="Звичайний пошук") {
-            RestClient.getApi().search(search, currentSearchPage, new Callback<MovieRequestResult>() {
-                @Override
-                public void success(MovieRequestResult result, Response response) {
-                    listView.setVisibility(View.VISIBLE);
-                    if (result.getResults() != null) {
-                        currentSearchPage = result.getPage();
-                        totalPages = result.getTotal_pages();
-                        refreshList((ArrayList<Movie>)result.getResults(),currentSearchPage,totalPages);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    if (!isOnline()) {
-                        Toast.makeText(getApplicationContext(), "Connection trouble. Please reconnect to the Internet", Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-            });
+            RestClient.getApi().search(search, currentSearchPage,this);
         }
         else{
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
@@ -229,20 +238,7 @@ public class MainActivity extends Activity {
      * метод оновлює список фільмів що знаходяться у списку "до перегляду"
      */
     void refreshWatchList(){
-        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,new Callback<MovieRequestResult>() {
-            @Override
-            public void success(MovieRequestResult movieRequestResult, Response response) {
-                if (movieRequestResult.getResults() != null) {
-                    int cp = movieRequestResult.getPage();
-                    totalPages = movieRequestResult.getTotal_pages();
-                    refreshList((ArrayList<Movie>)movieRequestResult.getResults(),cp,totalPages);
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-            }
-        });
+        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,this);
     }
     /**
      * оновлює список данними в залежності від обраної вкладки
@@ -261,21 +257,7 @@ public class MainActivity extends Activity {
                 break;
         }
 
-        RestClient.getApi().getMovies(currentTask, currentPage, new Callback<MovieRequestResult>() {
-            @Override
-            public void success(MovieRequestResult movieRequestResult, Response response) {
-                listView.setVisibility(View.VISIBLE);
-                if (movieRequestResult.getResults() != null) {
-                    int cp = movieRequestResult.getPage();
-                    totalPages = movieRequestResult.getTotal_pages();
-                    refreshList((ArrayList<Movie>) movieRequestResult.getResults(), cp, totalPages);
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-            }
-        });
+        RestClient.getApi().getMovies(currentTask,currentPage,this);
     }
     private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
         @Override
@@ -306,31 +288,12 @@ public class MainActivity extends Activity {
             }
             else{
                 JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':true}",JsonObject.class);
-                RestClient.getApi().setFavorite(object,RestClient.sessionId,new Callback<JsonElement>() {
-                    @Override
-                    public void success(JsonElement jsonElement, Response response) {
-                        Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-
-                    }
-                });
+                RestClient.getApi().setFavorite(object,RestClient.sessionId,new AddRemoveCallback("favorite",true));
             }
         }
         else if(item.getTitle()=="Add To Watchlist"){
             JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':true}",JsonObject.class);
-            RestClient.getApi().setWatchlist(object, RestClient.sessionId,new Callback<JsonElement>() {
-                @Override
-                public void success(JsonElement jsonElement, Response response) {
-                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                }
-            });
+            RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",true));
         }
         else if(item.getTitle()=="Share"){
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -349,35 +312,12 @@ public class MainActivity extends Activity {
             }
             else{
                 if(currentTask=="watchlist"){
-
                     JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
-                    RestClient.getApi().setWatchlist(object, RestClient.sessionId,new Callback<JsonElement>() {
-                        @Override
-                        public void success(JsonElement jsonElement, Response response) {
-                            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
-                            refreshWatchList();
-                        }
-
-                        @Override
-                        public void failure(RetrofitError error) {
-                            Log.w("w","W");
-                        }
-                    });
+                    RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",false));
                 }
                 else {
                     JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}",JsonObject.class);
-                    RestClient.getApi().setFavorite(object, RestClient.sessionId,new Callback<JsonElement>() {
-                        @Override
-                        public void success(JsonElement jsonElement, Response response) {
-                            Toast.makeText(getApplicationContext(), "Успішно видалено", Toast.LENGTH_SHORT).show();
-                            refreshFavorites();
-                        }
-
-                        @Override
-                        public void failure(RetrofitError error) {
-                            Log.w("w","W");
-                        }
-                    });
+                    RestClient.getApi().setFavorite(object, RestClient.sessionId,new AddRemoveCallback("favorite",false));
                 }
 
             }
@@ -438,21 +378,7 @@ public class MainActivity extends Activity {
             }
         }
         else{
-            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,new Callback<MovieRequestResult>() {
-                @Override
-                public void success(MovieRequestResult movieRequestResult, Response response) {
-                    if (movieRequestResult.getResults() != null) {
-                        int cp = movieRequestResult.getPage();
-                        totalPages = movieRequestResult.getTotal_pages();
-                        refreshList((ArrayList<Movie>)movieRequestResult.getResults(),cp,totalPages);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-
-                }
-            });
+            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,this);
         }
     }
     /**
@@ -464,42 +390,8 @@ public class MainActivity extends Activity {
             final Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
             MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) listView.getAdapter()).getWrappedAdapter();
             final Movie movie = adapter.getMovie(position - 1);
-            if (movie.getDetails() == null) {
-                RestClient.getApi().getDetails(movie.getId(), new Callback<Movie.Details>() {
-                    @Override
-                    public void success(final Movie.Details details, Response response) {
-                        RestClient.getApi().getImagePathes(movie.getId(), new Callback<JsonElement>() {
-                            @Override
-                            public void success(JsonElement imagesResult, Response response) {
-                                JsonArray array=imagesResult.getAsJsonObject().getAsJsonArray("backdrops");
-                                List<String> backdrops= new ArrayList<>();
-                                for(int i=0;i<array.size();++i){
-                                    String path=array.get(i).getAsJsonObject().get("file_path").getAsString();
-                                    backdrops.add(path);
-                                }
-                                details.setImagePathes(backdrops);
-                                movie.setDetails(details);
-                                intent.putExtra("Movie", movie);
-                                startActivity(intent);
-                            }
-
-                            @Override
-                            public void failure(RetrofitError error) {
-                                Toast.makeText(getApplicationContext(), "have some troubles with ths movie try another one", Toast.LENGTH_LONG).show();
-                            }
-                        });
-
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-
-                    }
-                });
-            } else {
-                intent.putExtra("Movie", movie);
-                startActivity(intent);
-            }
+            intent.putExtra("Movie", movie);
+            startActivity(intent);
         }
     };
     @Override
@@ -841,5 +733,20 @@ public class MainActivity extends Activity {
     public void onSaveInstanceState(Bundle savedState) {
         super.onSaveInstanceState(savedState);
         uiHelper.onSaveInstanceState(savedState);
+    }
+
+    // Коли успішно отримали фільми
+    @Override
+    public void success(MovieRequestResult movieRequestResult, Response response) {
+        if (movieRequestResult.getResults() != null) {
+            int cp = movieRequestResult.getPage();
+            totalPages = movieRequestResult.getTotal_pages();
+            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), cp, totalPages);
+        }
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+
     }
 }
