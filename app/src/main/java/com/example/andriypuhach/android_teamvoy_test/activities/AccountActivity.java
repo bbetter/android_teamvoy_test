@@ -162,6 +162,7 @@ public class AccountActivity extends FragmentActivity {
                 .registerTypeAdapter(DateTime.class, new Serializer())
                 .create();
         account = gson.fromJson(mPrefs.getString("Account", ""), Account.class);
+
     }
 
     /**
@@ -277,7 +278,6 @@ public class AccountActivity extends FragmentActivity {
                 public void onDismiss(DialogInterface dialog) {
                     account = edAccDialog.account;
                     saveAccount();
-                    refreshFields();
                 }
             });
             edAccDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
