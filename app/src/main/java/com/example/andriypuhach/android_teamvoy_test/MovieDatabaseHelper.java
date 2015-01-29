@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
@@ -67,7 +68,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     private final static String SELECT_QUERY="SELECT <COLUMNS> FROM <TABLE_NAME>";
 
     private String quotate(String str){
-        return "\'"+str+"\'";
+        return "\'"+str.replace("'","''")+"\'";
     }
     public MovieDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -130,10 +131,10 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 movie.getTitle()!=null?quotate(movie.getTitle()):null,
                 movie.getPoster_path()!=""?quotate(movie.getPoster_path()):null,
                 movie.getRelease_date()!=null?quotate(movie.getRelease_date().toLocalDate().toString()):null,
-                quotate(String.valueOf(movie.getDetails().getBudget())),
-                quotate(String.valueOf(movie.getDetails().getRevenue())),
+                String.valueOf(movie.getDetails().getBudget()),
+                String.valueOf(movie.getDetails().getRevenue()),
                 movie.getDetails().getHomepage()!=null?quotate(movie.getDetails().getHomepage()):null,
-                quotate(String.valueOf(movie.getPopularity())),
+                String.valueOf(movie.getPopularity()),
                 movie.getDetails().getStatus()!=null?quotate(movie.getDetails().getStatus()):null,
                 quotate(movie.getDetails().getGenresCommaSeparatedList()),
                 quotate(movie.getDetails().getCompaniesCommaSeparatedList()),
@@ -144,7 +145,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
         String [] noteValues ={String.valueOf(movie.getId()),
                 quotate(note.getNoteTitle()),
                 quotate(note.getNoteText()),
-                quotate(note.getImagePath())
+                note.getImagePath()!=null?quotate(note.getImagePath()):null
 };
         String movieInsertQuery=INSERT_QUERY
                 .replace("<TABLE_NAME>",MOVIES_TABLE_NAME)
@@ -159,7 +160,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             getWritableDatabase().execSQL(movieInsertQuery);
         }
         catch(Exception e){
-
+            Log.w("TAG", e.getCause().getMessage());
         }
         finally {
             getWritableDatabase().execSQL(query);

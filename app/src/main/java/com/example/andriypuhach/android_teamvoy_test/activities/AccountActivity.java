@@ -338,7 +338,7 @@ public class AccountActivity extends FragmentActivity {
 
     private void initilizeMap() {
 
-        if (googleMap == null) {
+           if (googleMap == null) {
             googleMap = ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(
                     R.id.map)).getMap();
 
