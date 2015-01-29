@@ -138,7 +138,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 movie.getDetails().getStatus()!=null?quotate(movie.getDetails().getStatus()):null,
                 quotate(movie.getDetails().getGenresCommaSeparatedList()),
                 quotate(movie.getDetails().getCompaniesCommaSeparatedList()),
-                movie.getDetails().getImagePathes()!=null?quotate(movie.getDetails().getImagesCommaSeparatedList()):null,
+                movie.getDetails().getImages().getImagePathes()!=null?quotate(movie.getDetails().getImages().getImagesCommaSeparatedList()):null,
                 String.valueOf(movie.getVote_average()),
                 quotate(movie.getDetails().getOverview())
 };
@@ -259,7 +259,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             String companiesSeparatedByCommas=cursor.getString(cursor.getColumnIndex(COMPANIES_COLUMN));
             details.setGenresSimplified(genresSeparatedByCommas);
             details.setCompaniesSimplified(companiesSeparatedByCommas);
-            details.setImagePathes(imagePathesList);
+            details.getImages().setImagePathes(imagePathesList);
             details.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW_COLUMN)));
             film.setDetails(details);
             movies.add(film);

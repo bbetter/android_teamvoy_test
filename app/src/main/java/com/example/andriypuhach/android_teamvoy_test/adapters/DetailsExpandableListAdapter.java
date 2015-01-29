@@ -54,8 +54,8 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
     public int getChildrenCount(int groupPosition) {
         switch(groupPosition){
             case VIEW_TYPE_INFO:return 1;
-            case VIEW_TYPE_CAST:return movie.getDetails().getCast().size();
-            case VIEW_TYPE_CREW:return movie.getDetails().getCrew().size();
+            case VIEW_TYPE_CAST:return movie.getDetails().getCredits().getCast().size();
+            case VIEW_TYPE_CREW:return movie.getDetails().getCredits().getCrew().size();
             case VIEW_TYPE_NOTES:return movie.getDetails().getNotes().size();
             default:return 1;
         }
@@ -199,7 +199,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 Picasso.with(context).load("file:///"+notes.get(childPosition).getImagePath()).error(R.drawable.failed_to_load).into(holder.ivNoteImage);
                 break;
             case VIEW_TYPE_CAST:{
-                List<Movie.Details.CastPerson> cast=movie.getDetails().getCast();
+                List<Movie.Details.Credits.CastPerson> cast=movie.getDetails().getCredits().getCast();
                 if(cast.size()>0) {
                     holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
                     holder.tvCastName.setText(cast.get(childPosition).getName());
@@ -208,7 +208,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
             }
             break;
             case VIEW_TYPE_CREW:{
-                List<Movie.Details.CrewPerson> crew=movie.getDetails().getCrew();
+                List<Movie.Details.Credits.CrewPerson> crew=movie.getDetails().getCredits().getCrew();
                 if(crew.size()>0) {
                     String dep = crew.get(childPosition).getDepartment();
                     String job = crew.get(childPosition).getJob();
@@ -220,10 +220,10 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
             }
             break;
             case VIEW_TYPE_VIDEO:{
-                if(movie.getDetails().getVideos().size()>0) {
-                    final Movie.Details.Video video = movie.getDetails().getVideos().get(childPosition);
+                if(movie.getDetails().getVideosWrapper().getVideos().size()>0) {
+                    final Movie.Details.Videos.Video video = movie.getDetails().getVideosWrapper().getVideos().get(childPosition);
                     holder.tvVideoTitle.setText(video.getName());
-                    holder.youTubeThumbnailView.initialize(Movie.Details.Video.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
+                    holder.youTubeThumbnailView.initialize(Movie.Details.Videos.Video.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
                         @Override
                         public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
                             youTubeThumbnailLoader.setVideo(video.getKey());

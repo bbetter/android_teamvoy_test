@@ -1,20 +1,13 @@
 package com.example.andriypuhach.android_teamvoy_test.services;
 
-import com.example.andriypuhach.android_teamvoy_test.TheMovieDBAccount;
-import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.models.MovieRequestResult;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.json.JSONObject;
-
 import retrofit.Callback;
 import retrofit.http.Body;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
-import retrofit.http.Header;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
@@ -28,13 +21,7 @@ public interface RetrofitMovieService {
     @GET("/movie/{thing}?api_key=" + apiKey)
     public void getMovies(@Path("thing") String thing, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/movie/{id}?api_key=" + apiKey)
-    public void getDetails(@Path("id") int id, Callback<Movie.Details> det);
-    @GET("/movie/{id}/credits?api_key="+apiKey)
-    public void getCastNCrew(@Path("id")int id,Callback<CastNCrewResult> res);
-    @GET("/movie/{id}/images?api_key=" + apiKey)
-    public void getImagePathes(@Path("id") int id, Callback<JsonElement> imRes);
-    @GET("/movie/{id}/videos?api_key=" + apiKey)
-    public void getVideos(@Path("id") int id, Callback<JsonElement> res);
+    public void getDetails(@Path("id") int id,@Query("append_to_response")String appendToResponse,Callback<Movie.Details> det);
     @GET("/search/movie?api_key=" + apiKey)
     public void search(@Query("query") String query, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/authentication/token/new?api_key=" + apiKey)
@@ -45,6 +32,7 @@ public interface RetrofitMovieService {
     public void getNewSession(@Query("request_token") String token, Callback<JsonElement> jsonResult);
     @GET("/account?api_key=" + apiKey)
     public void getAccountInfo(@Query("session_id") String sessionId, Callback<JsonElement> jsonResult);
+    //TODO: /account{id}/ що за параметр такий? і чому неважливо що в нього передаєШ?
     @GET("/account/100/watchlist/movies?api_key=" + apiKey)
     public void getWatchListMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);
     @GET("/account/100/favorite/movies?api_key=" + apiKey)

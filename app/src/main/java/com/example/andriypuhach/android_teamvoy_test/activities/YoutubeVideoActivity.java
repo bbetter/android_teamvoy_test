@@ -22,7 +22,7 @@ public class YoutubeVideoActivity extends YouTubeBaseActivity implements YouTube
         final Intent intent= getIntent();
         key=intent.getStringExtra("VideoKey");
         YouTubePlayerView youTubePlayerView=(YouTubePlayerView)findViewById(R.id.youtubeView);
-        youTubePlayerView.initialize(Movie.Details.Video.YOUTUBE_API_KEY,this);
+        youTubePlayerView.initialize(Movie.Details.Videos.Video.YOUTUBE_API_KEY,this);
     }
 
     @Override

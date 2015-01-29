@@ -205,39 +205,25 @@ public class Movie implements Serializable {
     public static class Details implements Serializable {
         private float budget;
         private float revenue;
+
         private String homepage;
         private String tagline;
         private String overview;
         private String status;
 
+        private Videos videos;
+        private Images images;
+        private Credits credits;
+        private Reviews reviews;
+
         private List<Note> notes;
-        private List<CastPerson> cast;
-        private List<CrewPerson> crew;
-        private List<Video> videos;
-
-        public List<CastPerson> getCast() {
-            return cast;
-        }
-
-        public void setCast(List<CastPerson> cast) {
-            this.cast = cast;
-        }
-
-        public List<CrewPerson> getCrew() {
-            return crew;
-        }
-
-        public void setCrew(List<CrewPerson> crew) {
-            this.crew = crew;
-        }
 
         private List<Genre> genres;
         private List<Company> production_companies;
         private List<Country> production_countries;
         private List<Language> spoken_languages;
 
-        private List<String> imagePathes;
-
+        //через кому
         private String genresSimplified;
         private String companiesSimplified;
 
@@ -315,17 +301,6 @@ public class Movie implements Serializable {
             }
             return "";
         }
-        public String getImagesCommaSeparatedList(){
-           return Joiner.join(imagePathes,',');
-        }
-
-        public List<String> getImagePathes() {
-            return imagePathes;
-        }
-
-        public void setImagePathes(List<String> imagePathes) {
-            this.imagePathes = imagePathes;
-        }
 
         public float getRevenue() {
             return revenue;
@@ -392,13 +367,40 @@ public class Movie implements Serializable {
             this.companiesSimplified = companiesSimplified;
         }
 
-        public List<Video> getVideos() {
+        public Videos getVideosWrapper() {
             return videos;
         }
 
-        public void setVideos(List<Video> videos) {
+        public void setVideosWrapper(Videos videos) {
             this.videos = videos;
         }
+
+        public Images getImages() {
+            return images;
+        }
+
+        public void setImages(Images images) {
+            this.images = images;
+        }
+
+        public Credits getCredits() {
+            return credits;
+        }
+
+        public void setCredits(Credits credits) {
+            this.credits = credits;
+        }
+
+        public Reviews getReviews() {
+            return reviews;
+        }
+
+        public void setReviews(Reviews reviews) {
+            this.reviews = reviews;
+        }
+
+
+
 
         public class Language implements Serializable {
             private String iso;
@@ -420,7 +422,6 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-
         public class Company implements Serializable {
             private int id;
             private String name;
@@ -441,7 +442,6 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-
         public class Country implements Serializable {
             private String iso;
             private String name;
@@ -462,7 +462,6 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-
         public class Genre implements Serializable {
             private int id;
             private String name;
@@ -484,6 +483,324 @@ public class Movie implements Serializable {
             }
         }
 
+        public static class Images implements Serializable{
+            private List<String> imagePathes;
+
+            public List<Backdrop> getBackdrops() {
+                return backdrops;
+            }
+
+            public void setImagePathes(List<String> imagePathes) {
+                this.imagePathes = imagePathes;
+            }
+
+            public String getImagesCommaSeparatedList() {
+                return Joiner.join(getImagePathes(),',');
+            }
+            public List<String> getImagePathes() {
+                List<String> imagePathes = new ArrayList<>();
+                for(Backdrop backdrop:backdrops){
+                    imagePathes.add(backdrop.getFile_path());
+                }
+                return imagePathes;
+            }
+
+            public void setBackdrops(List<Backdrop> backdrops) {
+                this.backdrops = backdrops;
+            }
+
+            public static class Backdrop{
+                private String aspect_ratio;
+                private String file_path;
+                private int height;
+                private int width;
+                private String vote_average;
+                private int vote_count;
+
+                public String getAspect_ratio() {
+                    return aspect_ratio;
+                }
+
+                public void setAspect_ratio(String aspect_ratio) {
+                    this.aspect_ratio = aspect_ratio;
+                }
+
+                public String getFile_path() {
+                    return file_path;
+                }
+
+                public void setFile_path(String file_path) {
+                    this.file_path = file_path;
+                }
+
+                public int getHeight() {
+                    return height;
+                }
+
+                public void setHeight(int height) {
+                    this.height = height;
+                }
+
+                public int getWidth() {
+                    return width;
+                }
+
+                public void setWidth(int width) {
+                    this.width = width;
+                }
+
+                public String getVote_average() {
+                    return vote_average;
+                }
+
+                public void setVote_average(String vote_average) {
+                    this.vote_average = vote_average;
+                }
+
+                public int getVote_count() {
+                    return vote_count;
+                }
+
+                public void setVote_count(int vote_count) {
+                    this.vote_count = vote_count;
+                }
+            }
+            private List<Backdrop> backdrops;
+        }
+        public static class Videos implements Serializable{
+            public static class Video implements Serializable{
+                public final static String YOUTUBE_API_KEY="AIzaSyDuoKjXOkrcIABTNCwhnVdZye4tQ0yHtBE";
+                String key;
+                String name;
+                String site;
+                String type;
+
+                public String getKey() {
+                    return key;
+                }
+
+                public void setKey(String key) {
+                    this.key = key;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getSite() {
+                    return site;
+                }
+
+                public void setSite(String site) {
+                    this.site = site;
+                }
+
+                public String getType() {
+                    return type;
+                }
+
+                public void setType(String type) {
+                    this.type = type;
+                }
+            }
+            public List<Video> getVideos() {
+                return results;
+            }
+
+            public void setVideos(List<Video> videos) {
+                this.results = videos;
+            }
+            private List<Video> results;
+        }
+        public static class Credits implements Serializable {
+
+            public static class CastPerson {
+                private int id;
+                private String character;
+                private String name;
+                private String order;
+                private String profile_path;
+
+                public int getId() {
+                    return id;
+                }
+
+                public void setId(int id) {
+                    this.id = id;
+                }
+
+                public String getCharacter() {
+                    return character;
+                }
+
+                public void setCharacter(String character) {
+                    this.character = character;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getOrder() {
+                    return order;
+                }
+
+                public void setOrder(String order) {
+                    this.order = order;
+                }
+
+                public String getProfile_path() {
+                    return profile_path;
+                }
+
+                public void setProfile_path(String profile_path) {
+                    this.profile_path = profile_path;
+                }
+            }
+            public static class CrewPerson {
+                private int id;
+                private String department;
+                private String job;
+                private String name;
+                private String profile_path;
+
+                public int getId() {
+                    return id;
+                }
+
+                public void setId(int id) {
+                    this.id = id;
+                }
+
+                public String getDepartment() {
+                    return department;
+                }
+
+                public void setDepartment(String department) {
+                    this.department = department;
+                }
+
+                public String getJob() {
+                    return job;
+                }
+
+                public void setJob(String job) {
+                    this.job = job;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getProfile_path() {
+                    return profile_path;
+                }
+
+                public void setProfile_path(String profile_path) {
+                    this.profile_path = profile_path;
+                }
+            }
+
+            private int id;
+            private List<CastPerson> cast;
+            private List<CrewPerson> crew;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public List<CastPerson> getCast() {
+                return cast;
+            }
+
+            public void setCast(List<CastPerson> cast) {
+                this.cast = cast;
+            }
+
+            public List<CrewPerson> getCrew() {
+                return crew;
+            }
+
+            public void setCrew(List<CrewPerson> crew) {
+                this.crew = crew;
+            }
+        }
+        public static class Reviews implements Serializable{
+            public static class Review implements Serializable{
+                private String author;
+                private String url;
+                private String content;
+
+                public String getAuthor() {
+                    return author;
+                }
+
+                public void setAuthor(String author) {
+                    this.author = author;
+                }
+
+                public String getUrl() {
+                    return url;
+                }
+
+                public void setUrl(String url) {
+                    this.url = url;
+                }
+
+                public String getContent() {
+                    return content;
+                }
+
+                public void setContent(String content) {
+                    this.content = content;
+                }
+            }
+            private int page;
+            private int total_pages;
+            private List<Review> results;
+
+            public int getPage() {
+                return page;
+            }
+
+            public void setPage(int page) {
+                this.page = page;
+            }
+
+            public int getTotal_pages() {
+                return total_pages;
+            }
+
+            public void setTotal_pages(int total_pages) {
+                this.total_pages = total_pages;
+            }
+
+            public List<Review> getResults() {
+                return results;
+            }
+
+            public void setResults(List<Review> results) {
+                this.results = results;
+            }
+        }
+
+        //note окремо бо підтягується з бази а не з інтернету
         public static class Note implements Serializable {
             private int id;
             private String noteTitle;
@@ -520,169 +837,6 @@ public class Movie implements Serializable {
 
             public void setImagePath(String imagePath) {
                 this.imagePath = imagePath;
-            }
-        }
-
-        /**
-         * Created by andriypuhach on 26.01.15.
-         */
-        public static class CastPerson {
-            private int id;
-           // private int cast_id;
-            private String character;
-            private String name;
-            private String order;
-            private String profile_path;
-
-            public int getId() {
-                return id;
-            }
-
-            public void setId(int id) {
-                this.id = id;
-            }
-
-         /*   public int getCast_id() {
-                return cast_id;
-            }
-
-            public void setCast_id(int cast_id) {
-                this.cast_id = cast_id;
-            }
-*/
-            public String getCharacter() {
-                return character;
-            }
-
-            public void setCharacter(String character) {
-                this.character = character;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public String getOrder() {
-                return order;
-            }
-
-            public void setOrder(String order) {
-                this.order = order;
-            }
-
-            public String getProfile_path() {
-                return profile_path;
-            }
-
-            public void setProfile_path(String profile_path) {
-                this.profile_path = profile_path;
-            }
-        }
-
-        /**
-         * Created by andriypuhach on 26.01.15.
-         */
-        public static class CrewPerson {
-            private int id;
-          //  private int credit_id;
-            private String department;
-            private String job;
-            private String name;
-            private String profile_path;
-
-            public int getId() {
-                return id;
-            }
-
-            public void setId(int id) {
-                this.id = id;
-            }
-
-         /*   public int getCredit_id() {
-                return credit_id;
-            }
-
-            public void setCredit_id(int credit_id) {
-                this.credit_id = credit_id;
-            }*/
-
-            public String getDepartment() {
-                return department;
-            }
-
-            public void setDepartment(String department) {
-                this.department = department;
-            }
-
-            public String getJob() {
-                return job;
-            }
-
-            public void setJob(String job) {
-                this.job = job;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public String getProfile_path() {
-                return profile_path;
-            }
-
-            public void setProfile_path(String profile_path) {
-                this.profile_path = profile_path;
-            }
-        }
-
-        /**
-         * Created by andriypuhach on 27.01.15.
-         */
-        public static class Video {
-            public final static String YOUTUBE_API_KEY="AIzaSyDuoKjXOkrcIABTNCwhnVdZye4tQ0yHtBE";
-            String key;
-            String name;
-            String site;
-            String type;
-
-            public String getKey() {
-                return key;
-            }
-
-            public void setKey(String key) {
-                this.key = key;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public String getSite() {
-                return site;
-            }
-
-            public void setSite(String site) {
-                this.site = site;
-            }
-
-            public String getType() {
-                return type;
-            }
-
-            public void setType(String type) {
-                this.type = type;
             }
         }
     }

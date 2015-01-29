@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
@@ -21,16 +22,10 @@ import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsExpandableListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
-import com.example.andriypuhach.android_teamvoy_test.models.CastNCrewResult;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Callback;
@@ -38,10 +33,6 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class DetailsActivity extends Activity implements Callback<Movie.Details> {
-    enum Type{
-        VIDEOS,
-        IMAGES
-    }
 
     private ExpandableListView detailsListView;
     private DetailsExpandableListAdapter detailsListAdapter;
@@ -51,46 +42,6 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     private Movie.Details.Note selectedNote;
     private MovieDatabaseHelper dbHelper;
     private Movie movie;
-
-    class VideoAndImagesCallback implements Callback<JsonElement>{
-        Type type;
-        public VideoAndImagesCallback(Type type){
-            this.type=type;
-        }
-        @Override
-        public void success(JsonElement jsonElement, Response response) {
-            switch(type) {
-             case VIDEOS:
-                 //отримую список відео у вигляді json масиву і конвертую у List<Movie.Details.Video>
-                 movie.getDetails().setVideos((List<Movie.Details.Video>)new Gson().fromJson(jsonElement.getAsJsonObject().get("results"),new TypeToken<List<Movie.Details.Video>>(){}.getType()));
-                break;
-             case IMAGES:
-                    JsonArray array = jsonElement.getAsJsonObject().getAsJsonArray("backdrops");
-                    List<String> backdrops = new ArrayList<>();
-                    for (int i = 0; i < array.size(); ++i) {
-                        String path = array.get(i).getAsJsonObject().get("file_path").getAsString();
-                        backdrops.add(path);
-                    }
-                    movie.getDetails().setImagePathes(backdrops);
-
-                 for(String path : backdrops){
-                     TextSliderView view = new TextSliderView(getApplicationContext());
-                     view.description(movie.getTitle())
-                             .image(Movie.transformPathToURL(path, Movie.ImageSize.W600))
-                             .error(R.drawable.failed_to_load)
-                             .setScaleType(BaseSliderView.ScaleType.Fit);
-                     slider.addSlider(view);
-                 }
-                break;
-            }
-
-        }
-
-        @Override
-        public void failure(RetrofitError error) {
-
-        }
-    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -165,7 +116,6 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
         }
         return true;
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -182,8 +132,8 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 if(groupPosition==3){
-                    if(movie.getDetails().getVideos().size()>childPosition && movie.getDetails().getVideos().size()!=0) {
-                        Movie.Details.Video video = movie.getDetails().getVideos().get(childPosition);
+                    if(movie.getDetails().getVideosWrapper().getVideos().size()>childPosition && movie.getDetails().getVideosWrapper().getVideos().size()!=0) {
+                        Movie.Details.Videos.Video video = movie.getDetails().getVideosWrapper().getVideos().get(childPosition);
                         final Intent intent = new Intent(DetailsActivity.this, YoutubeVideoActivity.class);
                         intent.putExtra("VideoKey", video.getKey());
                         startActivity(intent);
@@ -203,7 +153,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                 return false;
             }
         });
-        RestClient.getApi().getDetails(movie.getId(),this);
+        RestClient.getApi().getDetails(movie.getId(),"reviews,videos,images,credits",this);
     }
 
     /**
@@ -259,20 +209,20 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     @Override
     public void success(Movie.Details details, Response response) {
         movie.setDetails(details);
-        RestClient.getApi().getImagePathes(movie.getId(),new VideoAndImagesCallback(Type.IMAGES));
-        RestClient.getApi().getVideos(movie.getId(),new VideoAndImagesCallback(Type.VIDEOS));
-        RestClient.getApi().getCastNCrew(movie.getId(),new Callback<CastNCrewResult>() {
-            @Override
-            public void success(CastNCrewResult castNCrewResult, Response response) {
-                movie.getDetails().setCast(castNCrewResult.getCast());
-                movie.getDetails().setCrew(castNCrewResult.getCrew());
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        List<String> images=movie.getDetails().getImages().getImagePathes();
+        for(String str: images){
+            TextSliderView view = new TextSliderView(this);
+            view
+                    .image(str)
+                    .error(R.drawable.failed_to_load)
+                    .setScaleType(BaseSliderView.ScaleType.Fit);
+            slider.addSlider(view);
+        }
         movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
         detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
         detailsListView.setAdapter(detailsListAdapter);
@@ -281,7 +231,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
 
     @Override
     public void failure(RetrofitError error) {
-
+        Toast.makeText(getApplicationContext(),"Can't load movie details",Toast.LENGTH_LONG).show();
     }
 }
 
