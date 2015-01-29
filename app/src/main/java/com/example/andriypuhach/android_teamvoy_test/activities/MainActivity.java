@@ -453,6 +453,13 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnected();
     }
+
+    /**
+     * метод перевіряє чи є фільм у заданому списку
+     * @param movieList список
+     * @param movie фільм
+     * @return true якщо фільм присутній інакше false
+     */
     private boolean isMovieInList(List<Movie> movieList, Movie movie) {
         for (Movie m : movieList) {
             if (movie.getOriginal_title().equals(m.getTitle()) && movie.getRelease_date().equals(m.getRelease_date()))
@@ -460,6 +467,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         }
         return false;
     }
+
+    /**
+     * видаляє із списку фільмів заданий(необхідно для видалення локальних улюблених фільмів
+     * @param id id фільма
+     * @param movies список
+     */
     private void removeById(int id,List<Movie> movies){
         for(Movie m:movies){
             if(m.getId()==id) {
@@ -469,6 +482,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
         }
     }
+
+    /**
+     * метод проводить повну автентифікацію користувача на сайті themoviedb.org
+     * @param username ім'я користувача
+     * @param password пароль
+     */
     public void full_authenticate(final String username, final String password){
         Toast.makeText(getApplicationContext(),"Wait until connection is established",Toast.LENGTH_LONG).show();
         RestClient.getApi().getToken(new Callback<JsonElement>() {
@@ -598,14 +617,13 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                     editor.putString("RequestToken","");
                     editor.apply();
                     tmbdConnected = false;
-                    theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
-                    tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
-
                     if (currentTask == "watchlist" || currentTask == "favorites") {
                         currentTask = "popular";
                         tabs.setCurrentTab(0);
                     }
                 }
+                theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
+                tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
             }
         });
         facebookLoginButton =(LoginButton)findViewById(R.id.fb_login_button);
