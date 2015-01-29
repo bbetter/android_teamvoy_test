@@ -276,56 +276,61 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        if (item.getTitle() == "Add To Favorites") {
-            if(!tmbdConnected) {
-                if (!isMovieInList(Movie.favorites, selectedMovie)) {
-                    Movie.favorites.add(selectedMovie);
+        switch(item.getTitle().toString()){
+            case "Add To Favorites":{
+                if(!tmbdConnected) {
+                    if (!isMovieInList(Movie.favorites, selectedMovie)) {
+                        Movie.favorites.add(selectedMovie);
+                        Movie.saveFavorites();
+                        Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else{
+                    JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':true}",JsonObject.class);
+                    RestClient.getApi().setFavorite(object,RestClient.sessionId,new AddRemoveCallback("favorite",true));
+                }
+            }
+            break;
+            case "Add To Watchlist":{
+                JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':true}",JsonObject.class);
+                RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",true));
+            }
+            break;
+            case "Share":{
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "I like " +
+                        selectedMovie.getTitle() +
+                        "You should check it\n" +
+                        Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
+                startActivity(Intent.createChooser(sharingIntent, "Share via"));
+            }
+            break;
+            case "Delete":{
+                if(!tmbdConnected) {
+                    removeById(selectedMovie.getId(), Movie.favorites);
                     Movie.saveFavorites();
-                    Toast.makeText(getApplicationContext(), "Успішно додано", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Цей фільм уже у вашому списку", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    if(currentTask=="watchlist"){
+                        JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
+                        RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",false));
+                    }
+                    else {
+                        JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}",JsonObject.class);
+                        RestClient.getApi().setFavorite(object, RestClient.sessionId,new AddRemoveCallback("favorite",false));
+                    }
+
                 }
             }
-            else{
-                JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':true}",JsonObject.class);
-                RestClient.getApi().setFavorite(object,RestClient.sessionId,new AddRemoveCallback("favorite",true));
+            break;
+            case "Post To Facebook":{
+                FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
             }
-        }
-        else if(item.getTitle()=="Add To Watchlist"){
-            JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':true}",JsonObject.class);
-            RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",true));
-        }
-        else if(item.getTitle()=="Share"){
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-            sharingIntent.setType("text/plain");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, "I like " +
-                    selectedMovie.getTitle() +
-                    "You should check it\n" +
-                    Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
+            break;
 
-            startActivity(Intent.createChooser(sharingIntent, "Share via"));
-        }
-        else if(item.getTitle()=="Delete"){
-            if(!tmbdConnected) {
-                removeById(selectedMovie.getId(), Movie.favorites);
-                Movie.saveFavorites();
-            }
-            else{
-                if(currentTask=="watchlist"){
-                    JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
-                    RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",false));
-                }
-                else {
-                    JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}",JsonObject.class);
-                    RestClient.getApi().setFavorite(object, RestClient.sessionId,new AddRemoveCallback("favorite",false));
-                }
-
-            }
-
-
-        }
-        else if(item.getTitle()=="Post To Facebook"){
-            FacebookManager.postToFacebook(selectedMovie.getOriginal_title(), MainActivity.this);
         }
         return true;
     }
