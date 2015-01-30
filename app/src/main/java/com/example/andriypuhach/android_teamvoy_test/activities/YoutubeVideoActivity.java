@@ -28,10 +28,11 @@ public class YoutubeVideoActivity extends YouTubeBaseActivity implements YouTube
     @Override
     public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
         youTubePlayer.loadVideo(key);
+
     }
 
     @Override
     public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
-           
+
     }
 }

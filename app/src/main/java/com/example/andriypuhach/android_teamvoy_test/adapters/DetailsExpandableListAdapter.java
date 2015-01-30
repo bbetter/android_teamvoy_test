@@ -215,7 +215,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 if(cast.size()>0) {
                     holder.tvCastCharacter.setText(cast.get(childPosition).getCharacter());
                     holder.tvCastName.setText(cast.get(childPosition).getName());
-                    Picasso.with(context).load(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivCastImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(cast.get(childPosition).getProfile_path(), Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivCastImage);
                 }
             }
             break;
@@ -226,7 +226,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     String job = crew.get(childPosition).getJob();
                     holder.tvCrewDepartmentNJob.setText(dep + "\n'" + job + "'");
                     holder.tvCrewName.setText(crew.get(childPosition).getName());
-                    Picasso.with(context).load(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivCrewImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(crew.get(childPosition).getProfile_path(), Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivCrewImage);
                 }
 
             }
@@ -239,11 +239,12 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                         @Override
                         public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
                             youTubeThumbnailLoader.setVideo(video.getKey());
+
                         }
 
                         @Override
                         public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
-
+                            youTubeThumbnailView.setImageResource(R.drawable.failed_to_load);
                         }
                     });
                 }
@@ -256,7 +257,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     String text = reviews.get(childPosition).getContent();
                     holder.tvReviewAuthor.setText(author);
                     holder.tvReviewText.setText(text);
-                    Picasso.with(context).load(Movie.transformPathToURL(movie.getPoster_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivReviewImage);
+                    Picasso.with(context).load(Movie.transformPathToURL(movie.getPoster_path(), Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivReviewImage);
                 }
                 break;
 

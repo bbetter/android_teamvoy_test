@@ -142,11 +142,18 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 String.valueOf(movie.getVote_average()),
                 quotate(movie.getDetails().getOverview())
 };
+        String tryGetMovieQuery=SELECT_QUERY
+                .replace("<TABLE_NAME>",MOVIES_TABLE_NAME)
+                .replace("<COLUMNS>","*")
+                .concat(" where movieID="+movie.getId());
+
+
         String [] noteValues ={String.valueOf(movie.getId()),
                 quotate(note.getNoteTitle()),
                 quotate(note.getNoteText()),
                 note.getImagePath()!=null?quotate(note.getImagePath()):null
 };
+
         String movieInsertQuery=INSERT_QUERY
                 .replace("<TABLE_NAME>",MOVIES_TABLE_NAME)
                 .replace("<COLUMNS>",Joiner.join(Arrays.asList(MOVIE_COLUMNS),','))
@@ -157,16 +164,19 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 .replace("<COLUMNS>",Joiner.join(Arrays.asList(NOTE_COLUMNS),','))
                 .replace("<VALUES>",Joiner.join(Arrays.asList(noteValues),','));
         try {
-            getWritableDatabase().execSQL(movieInsertQuery);
+            Cursor cursor=getReadableDatabase().rawQuery(tryGetMovieQuery,null);
+
+            if(!cursor.moveToFirst()){
+                getWritableDatabase().execSQL(movieInsertQuery);
+            }
+            cursor.close();
         }
         catch(Exception e){
-            Log.w("TAG", e.getCause().getMessage());
+            Log.w("TAG",e.getMessage());
+            Toast.makeText(context,"При спробі додати нотатку сталась проблема,спробуйте ще раз",Toast.LENGTH_LONG).show();
         }
-        finally {
             getWritableDatabase().execSQL(query);
             Toast.makeText(context,"Нотатку додано",Toast.LENGTH_SHORT).show();
-        }
-
     }
     public void updateNote(Context context,Movie.Details.Note note){
         String query=UPDATE_QUERY
