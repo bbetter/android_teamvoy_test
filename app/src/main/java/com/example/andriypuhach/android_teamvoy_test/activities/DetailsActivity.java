@@ -209,16 +209,11 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     @Override
     public void success(Movie.Details details, Response response) {
         movie.setDetails(details);
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        List<String> images=movie.getDetails().getImages().getImagePathes();
+            List<String> images=movie.getDetails().getImages().getImagePathes();
         for(String str: images){
             TextSliderView view = new TextSliderView(this);
             view
-                    .image(str)
+                    .image(Movie.transformPathToURL(str, Movie.ImageSize.W600))
                     .error(R.drawable.failed_to_load)
                     .setScaleType(BaseSliderView.ScaleType.Fit);
             slider.addSlider(view);

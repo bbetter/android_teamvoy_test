@@ -391,7 +391,7 @@ public class Movie implements Serializable {
             this.credits = credits;
         }
 
-        public Reviews getReviews() {
+        public Reviews getReviewWrapper() {
             return reviews;
         }
 
@@ -791,11 +791,11 @@ public class Movie implements Serializable {
                 this.total_pages = total_pages;
             }
 
-            public List<Review> getResults() {
+            public List<Review> getReviews() {
                 return results;
             }
 
-            public void setResults(List<Review> results) {
+            public void setReviews(List<Review> results) {
                 this.results = results;
             }
         }

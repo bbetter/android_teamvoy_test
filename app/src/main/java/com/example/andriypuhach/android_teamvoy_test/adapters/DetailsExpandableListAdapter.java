@@ -26,12 +26,13 @@ import java.util.List;
 public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     public final static int VIEW_TYPE_INFO = 0;
-    public final static int VIEW_TYPE_NOTES = 4;
+    public final static int VIEW_TYPE_REVIEW=4;
+    public final static int VIEW_TYPE_NOTES = 5;
     public final static int VIEW_TYPE_CAST = 1;
     public final static int VIEW_TYPE_CREW = 2;
     public final static int VIEW_TYPE_VIDEO = 3;
 
-    private final String [] headers={"Інформація","Знімались","Знімали","Відео","Нотатки"};
+    private final String [] headers={"Інформація","Знімались","Знімали","Відео","Рецензії","Нотатки"};
     private LayoutInflater inflater;
     private Context context;
     private Movie movie;
@@ -103,8 +104,6 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         ViewHolder holder = new ViewHolder();
-        ViewGroup.LayoutParams layoutParams;
-
             switch (groupPosition) {
 
                 case VIEW_TYPE_INFO: {
@@ -174,6 +173,19 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     }
 
                 }
+                break;
+                case VIEW_TYPE_REVIEW:{
+                    if(convertView==null || ((ViewHolder)convertView.getTag()).tvReviewAuthor==null){
+                        convertView=inflater.inflate(R.layout.review_row,parent,false);
+                        holder.tvReviewAuthor=(TextView)convertView.findViewById(R.id.tvReviewAuthor);
+                        holder.tvReviewText=(TextView) convertView.findViewById(R.id.tvReviewText);
+                        holder.ivReviewImage=(ImageView)convertView.findViewById(R.id.reviewImage);
+                    }
+                    else{
+                        holder=(ViewHolder)convertView.getTag();
+                    }
+                }
+                break;
             }
             convertView.setTag(holder);
 
@@ -236,6 +248,19 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     });
                 }
             }
+            break;
+            case VIEW_TYPE_REVIEW:{
+                List<Movie.Details.Reviews.Review> reviews=movie.getDetails().getReviewWrapper().getReviews();
+                if(reviews.size()>0) {
+                    String author = reviews.get(childPosition).getAuthor();
+                    String text = reviews.get(childPosition).getContent();
+                    holder.tvReviewAuthor.setText(author);
+                    holder.tvReviewText.setText(text);
+                    Picasso.with(context).load(Movie.transformPathToURL(movie.getPoster_path(), Movie.ImageSize.W600)).error(R.drawable.failed_to_load).into(holder.ivReviewImage);
+                }
+                break;
+
+            }
         }
         return convertView;
     }
@@ -269,6 +294,10 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
         TextView tvCrewDepartmentNJob;
         TextView tvCrewName;
         ImageView ivCrewImage;
+
+        TextView tvReviewAuthor;
+        TextView tvReviewText;
+        ImageView ivReviewImage;
 
         TextView tvVideoTitle;
         YouTubeThumbnailView youTubeThumbnailView;
