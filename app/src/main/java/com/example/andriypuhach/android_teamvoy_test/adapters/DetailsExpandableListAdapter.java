@@ -238,6 +238,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     holder.youTubeThumbnailView.initialize(Movie.Details.Videos.Video.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
                         @Override
                         public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                          //  youTubeThumbnailLoader.release();
                             youTubeThumbnailLoader.setVideo(video.getKey());
 
                         }

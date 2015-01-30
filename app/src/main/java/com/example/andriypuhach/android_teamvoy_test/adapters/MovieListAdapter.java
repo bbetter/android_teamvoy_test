@@ -68,7 +68,7 @@ public class MovieListAdapter extends BaseAdapter {
             holder = (ViewHolder) vi.getTag();
         }
         Movie item = movies.get(position);
-        Picasso.with(context).load(item.getPosterURL(Movie.ImageSize.W150)).error(R.drawable.failed_to_load).into(holder.ivPoster);
+        Picasso.with(context).load(item.getPosterURL(Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivPoster);
         DateTime releaseDate = item.getRelease_date();
         String dateYear = "";
         if (releaseDate != null && releaseDate!=DateTime.now()) {
