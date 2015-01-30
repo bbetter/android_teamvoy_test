@@ -267,7 +267,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-        if(groupPosition==VIEW_TYPE_NOTES || groupPosition==VIEW_TYPE_VIDEO)
+        if(groupPosition==VIEW_TYPE_NOTES || groupPosition==VIEW_TYPE_VIDEO || groupPosition==VIEW_TYPE_REVIEW)
         return true;
         else return false;
     }

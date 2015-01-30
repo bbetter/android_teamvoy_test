@@ -142,11 +142,20 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                     }
 
                 }
-                else if(groupPosition==4){
-                    if(movie.getDetails().getNotes().size()>childPosition && movie.getDetails().getNotes().size()!=0){
+                else if(groupPosition==5){
+                    if(movie.getDetails().getNotes().size()>childPosition){
                         Movie.Details.Note note= movie.getDetails().getNotes().get(childPosition);
                         final Intent intent = new Intent(DetailsActivity.this,NoteActivity.class);
                         intent.putExtra("Note",note);
+                        startActivity(intent);
+                    }
+                }
+                else if(groupPosition==4){
+                    if(movie.getDetails().getReviewWrapper().getReviews().size()>childPosition){
+                        Movie.Details.Reviews.Review review = movie.getDetails().getReviewWrapper().getReviews().get(childPosition);
+                        final Intent intent = new Intent(DetailsActivity.this,ReviewActivity.class);
+                        intent.putExtra("Review",review);
+                        intent.putExtra("Image",movie.getPoster_path());
                         startActivity(intent);
                     }
                 }

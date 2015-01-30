@@ -15,13 +15,13 @@
             android:singleLine="true"
             android:textSize="25sp"
             android:textStyle="bold"
-            android:id="@+id/tvspNoteTitle"/>
+            android:id="@+id/tvspReviewAuthor"/>
         <ImageView
-            android:id="@+id/ivspNoteImage"
+            android:id="@+id/ivspReviewImage"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
         <TextView
-            android:id="@+id/tvspNoteText"
+            android:id="@+id/tvspReviewText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:singleLine="false"

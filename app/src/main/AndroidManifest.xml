@@ -37,7 +37,7 @@
         <activity android:name=".activities.AccountActivity"/>
         <activity android:name=".activities.YoutubeVideoActivity"/>
         <activity android:name=".activities.NoteActivity"/>
-
+        <activity android:name=".activities.ReviewActivity"/>
 
         <meta-data android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/app_id" />
