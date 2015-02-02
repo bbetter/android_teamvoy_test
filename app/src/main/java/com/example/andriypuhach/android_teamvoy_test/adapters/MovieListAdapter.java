@@ -20,10 +20,10 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 
 public class MovieListAdapter extends BaseAdapter {
-    Context context;
-    ArrayList<Movie> movies;
-    LayoutInflater inflater;
-    ViewHolder holder;
+    private Context context;
+    private ArrayList<Movie> movies;
+    private LayoutInflater inflater;
+    private ViewHolder holder;
 
     public MovieListAdapter(Context cntxt) {
         context = cntxt;
@@ -58,7 +58,7 @@ public class MovieListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View vi = convertView;
         if (convertView == null) {
-            vi = inflater.inflate(R.layout.row, null);
+            vi = inflater.inflate(R.layout.row, parent,false);
             holder = new ViewHolder();
             holder.tvTitle = (TextView) vi.findViewById(R.id.tvTitle);
             holder.rbRating = (RatingBar) vi.findViewById(R.id.rbRating);
@@ -68,6 +68,7 @@ public class MovieListAdapter extends BaseAdapter {
             holder = (ViewHolder) vi.getTag();
         }
         Movie item = movies.get(position);
+        Picasso.with(context).setDebugging(true);
         Picasso.with(context).load(item.getPosterURL(Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivPoster);
         DateTime releaseDate = item.getRelease_date();
         String dateYear = "";
@@ -78,7 +79,12 @@ public class MovieListAdapter extends BaseAdapter {
         holder.rbRating.setRating((float) item.getVote_average());
         return vi;
     }
-
+    public Movie getMovieByMovieID(int id){
+        for(Movie mv:movies){
+            if(mv.getId()==id) return mv;
+        }
+        return null;
+    }
     static class ViewHolder {
         TextView tvTitle;
         RatingBar rbRating;

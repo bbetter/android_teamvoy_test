@@ -136,7 +136,7 @@ public class AccountActivity extends FragmentActivity {
             List<String> pathes = account.getPhotoURLs();
             StringBuilder works = new StringBuilder();
             for (int i = 0; i < thWorks.size(); i++) {
-                works.append("\n" + thWorks.get(i).getName() + "\n" + thWorks.get(i).getPosition() + "\n" + thWorks.get(i).getDescription() + "\n");
+                works.append("\n").append(thWorks.get(i).getName()).append("\n").append(thWorks.get(i).getPosition()).append("\n").append(thWorks.get(i).getDescription()).append("\n");
                 if (i != thWorks.size() - 1)
                     works.append("------------------------");
             }
@@ -177,7 +177,7 @@ public class AccountActivity extends FragmentActivity {
         editor.apply();
     }
 
-    class AccountLoader extends AsyncTask<Void, Void, Account> {
+    private class AccountLoader extends AsyncTask<Void, Void, Account> {
         @Override
         protected Account doInBackground(Void... params) {
             try {
@@ -200,7 +200,7 @@ public class AccountActivity extends FragmentActivity {
      * клас призначений для завантаження інформації про локацію позначену на карті
      * або за допомогою GeoCoder або зробивши запит до api і зпарсивши json
      */
-    class PlaceLoader extends AsyncTask<Location, Void, String> {
+    private class PlaceLoader extends AsyncTask<Location, Void, String> {
         @Override
         protected void onProgressUpdate(Void... values) {
             placeView.setText("...");
@@ -218,7 +218,7 @@ public class AccountActivity extends FragmentActivity {
                     new Geocoder(getApplicationContext(), Locale.getDefault());
             Location loc = params[0];
             List<Address> addresses = null;
-            if (geocoder.isPresent()) {
+            if (Geocoder.isPresent()) {
                 try {
                     addresses = geocoder.getFromLocation(loc.getLatitude(),
                             loc.getLongitude(), 1);
@@ -242,7 +242,7 @@ public class AccountActivity extends FragmentActivity {
 
                     Address address = addresses.get(0);
 
-                    String addressText = String.format(
+                    return String.format(
                             "%s, %s, %s",
 
                             address.getMaxAddressLineIndex() > 0 ?
@@ -251,8 +251,6 @@ public class AccountActivity extends FragmentActivity {
                             address.getLocality(),
 
                             address.getCountryName());
-
-                    return addressText;
                 } else {
                     return "No address found";
                 }

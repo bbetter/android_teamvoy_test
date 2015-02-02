@@ -20,7 +20,7 @@ public class Serializer implements JsonSerializer<DateTime>, JsonDeserializer<Da
 {
 
     private static final String PATTERN = "yyyy/MM/dd";
-    final DateTimeFormatter fmt = DateTimeFormat.forPattern(PATTERN);
+    private final DateTimeFormatter fmt = DateTimeFormat.forPattern(PATTERN);
 
 
     @Override

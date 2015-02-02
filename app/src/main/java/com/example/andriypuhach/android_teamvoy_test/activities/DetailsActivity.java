@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.HeaderViewListAdapter;
 import android.widget.Toast;
 
 import com.daimajia.slider.library.SliderLayout;
@@ -20,6 +21,7 @@ import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
 import com.example.andriypuhach.android_teamvoy_test.adapters.DetailsExpandableListAdapter;
+import com.example.andriypuhach.android_teamvoy_test.adapters.MovieListAdapter;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.CreateNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.dialogs.EditNoteDialog;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
@@ -37,8 +39,6 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     private ExpandableListView detailsListView;
     private DetailsExpandableListAdapter detailsListAdapter;
     private SliderLayout slider;
-    private CreateNoteDialog cdd ;
-    private EditNoteDialog edd;
     private Movie.Details.Note selectedNote;
     private MovieDatabaseHelper dbHelper;
     private Movie movie;
@@ -77,7 +77,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
         }
         else
         if(item.getTitle()=="Edit"){
-            edd=new EditNoteDialog(DetailsActivity.this);
+            EditNoteDialog edd = new EditNoteDialog(DetailsActivity.this);
             edd.setTitle("Редагувати нотатку");
 
             edd.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -101,7 +101,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
         if(menuItem.getItemId()==R.id.add_note){
-            cdd=new CreateNoteDialog(DetailsActivity.this);
+            CreateNoteDialog cdd = new CreateNoteDialog(DetailsActivity.this);
             cdd.setTitle("Додати нотатку");
             cdd.setMovieInfo(movie);
             cdd.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -120,6 +120,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.details);
+
         dbHelper=new MovieDatabaseHelper(this);
         final Intent intent = getIntent();
         movie = (Movie) intent.getSerializableExtra("Movie");
@@ -131,6 +132,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
         detailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                detailsListAdapter.releaseLoader();
                 if(groupPosition==3){
                     if(movie.getDetails().getVideosWrapper().getVideos().size()>childPosition && movie.getDetails().getVideosWrapper().getVideos().size()!=0) {
                         Movie.Details.Videos.Video video = movie.getDetails().getVideosWrapper().getVideos().get(childPosition);
@@ -143,6 +145,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
 
                 }
                 else if(groupPosition==5){
+                    DetailsExpandableListAdapter.loaders[childPosition].release();
                     if(movie.getDetails().getNotes().size()>childPosition){
                         Movie.Details.Note note= movie.getDetails().getNotes().get(childPosition);
                         final Intent intent = new Intent(DetailsActivity.this,NoteActivity.class);
@@ -162,7 +165,9 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                 return false;
             }
         });
+        if(movie.getDetails()==null)
         RestClient.getApi().getDetails(movie.getId(),"reviews,videos,images,credits",this);
+        else refreshStuff();
     }
 
     /**
@@ -186,31 +191,29 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
 
         return path;
     }
-    
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==RESULT_CANCELED){
+        if (resultCode != RESULT_CANCELED) {
+            if(data!=null) {
+                Uri selectedImage = data.getData();
+                String filePath = getImagePath(selectedImage);
+                switch (requestCode) {
 
-        }
-        else
-        if(data!=null) {
-            Uri selectedImage = data.getData();
-            String filePath = getImagePath(selectedImage);
-            switch (requestCode) {
+                    case CreateNoteDialog.SELECT_PHOTO_CREATE: {
+                        CreateNoteDialog.createImagePath = null;
+                        CreateNoteDialog.createImagePath=filePath;
+                        Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
 
-                case CreateNoteDialog.SELECT_PHOTO_CREATE: {
-                    CreateNoteDialog.createImagePath = null;
-                    CreateNoteDialog.createImagePath=filePath;
-                    Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
-
+                    }
+                    break;
+                    case EditNoteDialog.SELECT_PHOTO_EDIT: {
+                        EditNoteDialog.editImagePath = filePath;
+                        Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
+                    }
+                    break;
                 }
-                break;
-                case EditNoteDialog.SELECT_PHOTO_EDIT: {
-                    EditNoteDialog.editImagePath = filePath;
-                    Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
-                }
-                break;
             }
         }
     }
@@ -218,14 +221,27 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     @Override
     public void success(Movie.Details details, Response response) {
         movie.setDetails(details);
-            List<String> images=movie.getDetails().getImages().getImagePathes();
+        MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) MainActivity.listView.getAdapter()).getWrappedAdapter();
+        adapter.getMovieByMovieID(movie.getId()).setDetails(movie.getDetails());
+        MainActivity.listView.setAdapter(adapter);
+        refreshStuff();
+
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        Toast.makeText(getApplicationContext(),"Can't load movie details",Toast.LENGTH_LONG).show();
+    }
+    public void refreshStuff(){
+        List<String> images=movie.getDetails().getImages().getImagePathes();
         for(String str: images){
             TextSliderView view = new TextSliderView(this);
             view
-                    .image(Movie.transformPathToURL(str, Movie.ImageSize.W600))
+                    .image(Movie.transformPathToURL(str, Movie.ImageSize.W300))
                     .error(R.drawable.failed_to_load)
                     .setScaleType(BaseSliderView.ScaleType.Fit);
             slider.addSlider(view);
+
         }
         movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
         detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);
@@ -233,9 +249,5 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
         registerForContextMenu(detailsListView);
     }
 
-    @Override
-    public void failure(RetrofitError error) {
-        Toast.makeText(getApplicationContext(),"Can't load movie details",Toast.LENGTH_LONG).show();
-    }
 }
 

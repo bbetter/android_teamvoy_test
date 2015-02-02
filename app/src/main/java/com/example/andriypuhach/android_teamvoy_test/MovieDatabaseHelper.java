@@ -129,7 +129,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
         String [] movieValues={String.valueOf(movie.getId()),
                 movie.getOriginal_title()!=null?quotate(movie.getOriginal_title()):null,
                 movie.getTitle()!=null?quotate(movie.getTitle()):null,
-                movie.getPoster_path()!=""?quotate(movie.getPoster_path()):null,
+                !movie.getPoster_path().equals("") ?quotate(movie.getPoster_path()):null,
                 movie.getRelease_date()!=null?quotate(movie.getRelease_date().toLocalDate().toString()):null,
                 String.valueOf(movie.getDetails().getBudget()),
                 String.valueOf(movie.getDetails().getRevenue()),
@@ -163,7 +163,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
                 .replace("<COLUMNS>",Joiner.join(Arrays.asList(NOTE_COLUMNS),','))
                 .replace("<VALUES>",Joiner.join(Arrays.asList(noteValues),','));
-        Cursor cursor=getReadableDatabase().rawQuery(tryGetMovieQuery,null);
+        Cursor cursor=getReadableDatabase().rawQuery(tryGetMovieQuery, null);
         try {
 
             if(!cursor.moveToFirst()){
@@ -291,7 +291,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
         finally {
             cursor.close();
             this.close();
-            return movies;
+
         }
+        return movies;
     }
 }

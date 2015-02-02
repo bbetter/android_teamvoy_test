@@ -13,7 +13,8 @@
         custom:auto_cycle="true"
         custom:indicator_visibility="invisible"
         custom:pager_animation_span="1500"
-        android:layout_height="200dp"/>
+        android:layout_height="200dp"
+        android:background="@null"/>
 
     <ExpandableListView
         android:id="@+id/detailsList"

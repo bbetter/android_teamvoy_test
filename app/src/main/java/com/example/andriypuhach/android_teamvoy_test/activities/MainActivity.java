@@ -47,14 +47,10 @@ import com.facebook.UiLifecycleHelper;
 import com.facebook.model.GraphUser;
 import com.facebook.widget.LoginButton;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
-import org.json.JSONObject;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,14 +62,13 @@ import retrofit.client.Response;
 public class MainActivity extends Activity implements Callback<MovieRequestResult> {
     //region UI STUFF
     private TabHost tabs;
-    private LoginButton facebookLoginButton;
     private Button theMovieDatabaseLoginButton;
-    private ListView listView;
+    public static ListView listView;
     private EditText searchEditText;
     private View header;
 
     private UiLifecycleHelper uiHelper; //facebook helper thing
-    int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
+    private int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
 
 
     class AddRemoveCallback implements Callback<JsonElement>{
@@ -104,7 +99,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      * @return повертає View створеного заголовку
      */
     View createHeader() {
-        View v = getLayoutInflater().inflate(R.layout.header, null);
+        View v = getLayoutInflater().inflate(R.layout.header,listView,false);
         v.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,7 +219,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      * @param search рядок для пошуку
      */
     void refreshListBySearch(String search) {
-        if(currentSearchType=="Звичайний пошук") {
+        if(currentSearchType.equals("Звичайний пошук")) {
             RestClient.getApi().search(search, currentSearchPage,this);
         }
         else{
@@ -314,7 +309,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                     Movie.saveFavorites();
                 }
                 else{
-                    if(currentTask=="watchlist"){
+                    if(currentTask.equals("watchlist")){
                         JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
                         RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",false));
                     }
@@ -347,12 +342,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                 listMenuItems.add("Add To Watchlist");
             if(Session.getActiveSession().isOpened())
                 listMenuItems.add("Post To Facebook");
-            if(currentTask=="favorite") {
+            if(currentTask.equals("favorite")) {
                 listMenuItems.remove("Share");
                 listMenuItems.remove("Add To Favorites");
                 listMenuItems.add("Delete");
             }
-            if(currentTask=="watchlist"){
+            if(currentTask.equals("watchlist")){
                 listMenuItems.remove("Share");
                 listMenuItems.remove("Add To Watchlist");
                 listMenuItems.add("Delete");
@@ -367,7 +362,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     /**
      * оновлює список улюблених фільмів, або із бази даних або із сайту themoviedb.org
      */
-    public void refreshFavorites() {
+    void refreshFavorites() {
         if(!tmbdConnected) {
             Movie.refreshFavorites();
             if (Movie.favorites != null) {
@@ -395,7 +390,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             final Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
             MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) listView.getAdapter()).getWrappedAdapter();
             final Movie movie = adapter.getMovie(position - 1);
-            intent.putExtra("Movie", movie);
+            intent.putExtra("Movie",movie);
             startActivity(intent);
         }
     };
@@ -447,7 +442,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      *  метод перевіряє чи користувач під'єднаний до мережі
      * @return повертає true якщо під'єднаний інакше(навіть ящко підключення саме триває) - ні
      */
-    public boolean isOnline() {
+    boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -488,7 +483,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      * @param username ім'я користувача
      * @param password пароль
      */
-    public void full_authenticate(final String username, final String password){
+    void full_authenticate(final String username, final String password){
         Toast.makeText(getApplicationContext(),"Wait until connection is established",Toast.LENGTH_LONG).show();
         RestClient.getApi().getToken(new Callback<JsonElement>() {
             @Override
@@ -515,7 +510,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                                         theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
                                         tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
 
-                                        if (currentTask == "watchlist" || currentTask == "favorites") {
+                                        if (currentTask.equals("watchlist") || currentTask.equals("favorites")) {
                                             currentTask = "popular";
                                             tabs.setCurrentTab(0);
                                         }
@@ -554,7 +549,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         RestClient.sessionId=prefs.getString("SessionID","");
         RestClient.requestToken=prefs.getString("RequestToken","");
 
-        if(RestClient.sessionId=="" && RestClient.requestToken!=""){
+        if(RestClient.sessionId.equals("") && !RestClient.requestToken.equals("")){
             TheMovieDBAccount.getNewSession();
             tmbdConnected=true;
         }
@@ -617,7 +612,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                     editor.putString("RequestToken","");
                     editor.apply();
                     tmbdConnected = false;
-                    if (currentTask == "watchlist" || currentTask == "favorites") {
+                    if (currentTask.equals("watchlist") || currentTask.equals("favorites")) {
                         currentTask = "popular";
                         tabs.setCurrentTab(0);
                     }
@@ -626,7 +621,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                 tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
             }
         });
-        facebookLoginButton =(LoginButton)findViewById(R.id.fb_login_button);
+        LoginButton facebookLoginButton = (LoginButton) findViewById(R.id.fb_login_button);
         facebookLoginButton.setReadPermissions(Arrays.asList("public_profile", "user_status", "user_birthday", "user_about_me", "user_relationships"));
         facebookLoginButton.setUserInfoChangedCallback(new LoginButton.UserInfoChangedCallback() {
             @Override
@@ -722,8 +717,8 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         RestClient.sessionId=prefs.getString("SessionID","");
         RestClient.requestToken=prefs.getString("RequestToken","");
         tmbdConnected=false;
-        if(RestClient.requestToken!="") {
-            if (RestClient.sessionId != "") {
+        if(!RestClient.requestToken.equals("")) {
+            if (!RestClient.sessionId.equals("")) {
                 tmbdConnected = true;
             }
             else{

@@ -84,7 +84,7 @@ public class Movie implements Serializable {
         this.details = details;
     }
 
-    public enum ImageSize {
+    public static enum ImageSize implements Serializable {
         W75 {
             @Override
             public String toString() {
@@ -201,10 +201,8 @@ public class Movie implements Serializable {
             movies = (List<Movie>) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException ignored) {
 
-        }
-        catch (ClassNotFoundException e) {
         }
         return movies;
     }
@@ -409,7 +407,7 @@ public class Movie implements Serializable {
 
 
 
-        public class Language implements Serializable {
+        public static class Language implements Serializable {
             private String iso;
             private String name;
 
@@ -429,7 +427,7 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-        public class Company implements Serializable {
+        public static class Company implements Serializable {
             private int id;
             private String name;
 
@@ -449,7 +447,7 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-        public class Country implements Serializable {
+        public static class Country implements Serializable {
             private String iso;
             private String name;
 
@@ -469,7 +467,7 @@ public class Movie implements Serializable {
                 this.name = name;
             }
         }
-        public class Genre implements Serializable {
+        public static class Genre implements Serializable {
             private int id;
             private String name;
 
@@ -516,7 +514,7 @@ public class Movie implements Serializable {
                 this.backdrops = backdrops;
             }
 
-            public static class Backdrop{
+            public static class Backdrop implements Serializable{
                 private String aspect_ratio;
                 private String file_path;
                 private int height;
@@ -630,7 +628,7 @@ public class Movie implements Serializable {
         }
         public static class Credits implements Serializable {
 
-            public static class CastPerson {
+            public static class CastPerson implements Serializable{
                 private int id;
                 private String character;
                 private String name;
@@ -677,7 +675,7 @@ public class Movie implements Serializable {
                     this.profile_path = profile_path;
                 }
             }
-            public static class CrewPerson {
+            public static class CrewPerson implements Serializable{
                 private int id;
                 private String department;
                 private String job;

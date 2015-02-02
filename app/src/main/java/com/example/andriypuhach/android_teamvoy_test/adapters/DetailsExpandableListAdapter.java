@@ -25,12 +25,13 @@ import java.util.List;
  */
 public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
-    public final static int VIEW_TYPE_INFO = 0;
-    public final static int VIEW_TYPE_REVIEW=4;
+    private final static int VIEW_TYPE_INFO = 0;
+    private final static int VIEW_TYPE_REVIEW=4;
     public final static int VIEW_TYPE_NOTES = 5;
-    public final static int VIEW_TYPE_CAST = 1;
-    public final static int VIEW_TYPE_CREW = 2;
-    public final static int VIEW_TYPE_VIDEO = 3;
+    private final static int VIEW_TYPE_CAST = 1;
+    private final static int VIEW_TYPE_CREW = 2;
+    private final static int VIEW_TYPE_VIDEO = 3;
+    public static YouTubeThumbnailLoader [] loaders;
 
     private final String [] headers={"Інформація","Знімались","Знімали","Відео","Рецензії","Нотатки"};
     private LayoutInflater inflater;
@@ -39,6 +40,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     public void setMovie(Movie mv){
         movie=mv;
+        loaders= new YouTubeThumbnailLoader[movie.getDetails().getVideosWrapper().getVideos().size()];
         notifyDataSetChanged();
     }
     public DetailsExpandableListAdapter(Activity activity,Movie mv){
@@ -92,7 +94,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         String header=(String)getGroup(groupPosition);
         if(convertView==null){
-            convertView=inflater.inflate(R.layout.group_item,null);
+            convertView=inflater.inflate(R.layout.group_item,parent,false);
         }
         TextView lblListHeader = (TextView) convertView
                 .findViewById(R.id.lblListHeader);
@@ -101,11 +103,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
         return convertView;
     }
 
+    public void releaseLoader(){
+        for(YouTubeThumbnailLoader loader :loaders){
+            loader.release();
+        }
+    }
 
     @Override
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         ViewHolder holder = new ViewHolder();
-            switch (groupPosition) {
+
+        switch (groupPosition) {
 
                 case VIEW_TYPE_INFO: {
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvBudget==null) {
@@ -239,6 +247,8 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                     holder.youTubeThumbnailView.initialize(Movie.Details.Videos.Video.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
                         @Override
                         public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                            loaders[childPosition]=youTubeThumbnailLoader;
+
                           //  youTubeThumbnailLoader.release();
                             youTubeThumbnailLoader.setVideo(video.getKey());
 
@@ -247,6 +257,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                         @Override
                         public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
                             youTubeThumbnailView.setImageResource(R.drawable.failed_to_load);
+
                         }
                     });
                 }
@@ -270,9 +281,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-        if(groupPosition==VIEW_TYPE_NOTES || groupPosition==VIEW_TYPE_VIDEO || groupPosition==VIEW_TYPE_REVIEW)
-        return true;
-        else return false;
+        return groupPosition == VIEW_TYPE_NOTES || groupPosition == VIEW_TYPE_VIDEO || groupPosition == VIEW_TYPE_REVIEW;
     }
 
     private static class ViewHolder {

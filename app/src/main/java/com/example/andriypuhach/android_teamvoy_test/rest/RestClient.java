@@ -60,14 +60,13 @@ public class RestClient {
     /**
      * Created by andriypuhach on 1/21/15.
      */
-    public static class DateTimeTypeConverter implements JsonDeserializer<DateTime>
+    private static class DateTimeTypeConverter implements JsonDeserializer<DateTime>
     {
         @Override
         public DateTime deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
             try {
                 if (json.getAsString()=="") return DateTime.now();
-                DateTime joda = new DateTime(json.getAsString());
-                return joda;
+                return new DateTime(json.getAsString());
             } catch (IllegalArgumentException e) {
                 Date date = context.deserialize(json, Date.class);
                 return new DateTime(date);

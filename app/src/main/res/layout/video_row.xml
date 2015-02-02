@@ -7,7 +7,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textSize="20dp"
+        android:textSize="20sp"
         android:text="Trailer 1"/>
     <com.google.android.youtube.player.YouTubeThumbnailView
         android:id="@+id/ytThumbnailView"
