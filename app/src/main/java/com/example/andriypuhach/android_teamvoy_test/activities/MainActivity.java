@@ -772,6 +772,5 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     public void failure(RetrofitError error) {
         if(!isOnline())
         Toast.makeText(this,"Будь ласка під'єднайтесь до мережі інтернет.",Toast.LENGTH_LONG).show();
-
     }
 }

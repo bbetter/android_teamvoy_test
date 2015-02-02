@@ -163,20 +163,24 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
                 .replace("<COLUMNS>",Joiner.join(Arrays.asList(NOTE_COLUMNS),','))
                 .replace("<VALUES>",Joiner.join(Arrays.asList(noteValues),','));
+        Cursor cursor=getReadableDatabase().rawQuery(tryGetMovieQuery,null);
         try {
-            Cursor cursor=getReadableDatabase().rawQuery(tryGetMovieQuery,null);
 
             if(!cursor.moveToFirst()){
                 getWritableDatabase().execSQL(movieInsertQuery);
             }
-            cursor.close();
+
         }
         catch(Exception e){
             Log.w("TAG",e.getMessage());
             Toast.makeText(context,"При спробі додати нотатку сталась проблема,спробуйте ще раз",Toast.LENGTH_LONG).show();
         }
-            getWritableDatabase().execSQL(query);
-            Toast.makeText(context,"Нотатку додано",Toast.LENGTH_SHORT).show();
+        finally {
+            cursor.close();
+        }
+        getWritableDatabase().execSQL(query);
+        Toast.makeText(context,"Нотатку додано",Toast.LENGTH_SHORT).show();
+
     }
     public void updateNote(Context context,Movie.Details.Note note){
         String query=UPDATE_QUERY
@@ -203,6 +207,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             notes.add(note);
 
         }
+        cursor.close();
+        this.close();
         return notes;
     }
     public Movie.Details.Note getNoteById(int id){
@@ -218,6 +224,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             note.setNoteText(cursor.getString(3));
             note.setImagePath(cursor.getString(4));
         }
+        cursor.close();
         return note;
     }
     public List<Movie.Details.Note> selectNoteByMovieID(int movieID){
@@ -235,7 +242,10 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
             note.setImagePath(cursor.getString(4));
             notes.add(note);
         }
+        cursor.close();
+        this.close();
         return notes;
+
     }
 
     public void deleteNote(int id){
@@ -243,6 +253,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
                 .replace("<CONDITION>","WHERE _id="+id);
         this.getWritableDatabase().execSQL(query);
+        this.close();
     }
 
     public List<Movie> searchByNote(String title){
@@ -250,30 +261,37 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 +" like '%"+ title.replace("%20"," ")+"%'";
         List<Movie> movies = new ArrayList<>();
         Cursor cursor=getReadableDatabase().rawQuery(query,null);
-        while(cursor.moveToNext()){
-            Movie film = new Movie();
-            film.setId(cursor.getInt(cursor.getColumnIndex(MOVIE_ID_COLUMN)));
-            film.setOriginal_title(cursor.getString(cursor.getColumnIndex(ORIGINAL_TITLE_COLUMN)));
-            film.setTitle(cursor.getString(cursor.getColumnIndex(TITLE_COLUMN)));
-            film.setPoster_path(cursor.getString(cursor.getColumnIndex(POSTER_PATH_COLUMN)));
-            film.setRelease_date(DateTime.parse(cursor.getString(cursor.getColumnIndex(RELEASE_DATE_COLUMN))));
-            film.setPopularity(cursor.getDouble(cursor.getColumnIndex(POPULARITY_COLUMN)));
-            film.setVote_average(cursor.getDouble(cursor.getColumnIndex(VOTE_AVERAGE_COLUMN)));
-            Movie.Details details = new Movie.Details();
-            details.setBudget(cursor.getFloat(cursor.getColumnIndex(BUDGET_COLUMN)));
-            details.setRevenue(cursor.getFloat(cursor.getColumnIndex(REVENUE_COLUMN)));
-            details.setStatus(cursor.getString(cursor.getColumnIndex(STATUS_COLUMN)));
-            String imagePathes=cursor.getString(cursor.getColumnIndex(IMAGES_COLUMN));
-            List<String> imagePathesList=new ArrayList<>(Arrays.asList(imagePathes.split(",")));
-            String genresSeparatedByCommas=cursor.getString(cursor.getColumnIndex(GENRES_COLUMN));
-            String companiesSeparatedByCommas=cursor.getString(cursor.getColumnIndex(COMPANIES_COLUMN));
-            details.setGenresSimplified(genresSeparatedByCommas);
-            details.setCompaniesSimplified(companiesSeparatedByCommas);
-            details.getImages().setImagePathes(imagePathesList);
-            details.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW_COLUMN)));
-            film.setDetails(details);
-            movies.add(film);
+        try {
+            while (cursor.moveToNext()) {
+                Movie film = new Movie();
+                film.setId(cursor.getInt(cursor.getColumnIndex(MOVIE_ID_COLUMN)));
+                film.setOriginal_title(cursor.getString(cursor.getColumnIndex(ORIGINAL_TITLE_COLUMN)));
+                film.setTitle(cursor.getString(cursor.getColumnIndex(TITLE_COLUMN)));
+                film.setPoster_path(cursor.getString(cursor.getColumnIndex(POSTER_PATH_COLUMN)));
+                film.setRelease_date(DateTime.parse(cursor.getString(cursor.getColumnIndex(RELEASE_DATE_COLUMN))));
+                film.setPopularity(cursor.getDouble(cursor.getColumnIndex(POPULARITY_COLUMN)));
+                film.setVote_average(cursor.getDouble(cursor.getColumnIndex(VOTE_AVERAGE_COLUMN)));
+                Movie.Details details = new Movie.Details();
+                details.setBudget(cursor.getFloat(cursor.getColumnIndex(BUDGET_COLUMN)));
+                details.setRevenue(cursor.getFloat(cursor.getColumnIndex(REVENUE_COLUMN)));
+                details.setStatus(cursor.getString(cursor.getColumnIndex(STATUS_COLUMN)));
+                String imagePathes = cursor.getString(cursor.getColumnIndex(IMAGES_COLUMN));
+                List<String> imagePathesList = new ArrayList<>(Arrays.asList(imagePathes.split(",")));
+                String genresSeparatedByCommas = cursor.getString(cursor.getColumnIndex(GENRES_COLUMN));
+                String companiesSeparatedByCommas = cursor.getString(cursor.getColumnIndex(COMPANIES_COLUMN));
+                details.setGenresSimplified(genresSeparatedByCommas);
+                details.setCompaniesSimplified(companiesSeparatedByCommas);
+                details.setImages(new Movie.Details.Images());
+                details.getImages().setImagePathes(imagePathesList);
+                details.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW_COLUMN)));
+                film.setDetails(details);
+                movies.add(film);
+            }
         }
-        return movies;
+        finally {
+            cursor.close();
+            this.close();
+            return movies;
+        }
     }
 }
