@@ -27,7 +27,6 @@ public class Serializer implements JsonSerializer<DateTime>, JsonDeserializer<Da
     public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context)
     {
         String retVal = fmt.print(src);
-        Log.v("MY LOCALDATE SERIALIZED", retVal);
         return new JsonPrimitive(retVal);
     }
 
@@ -36,8 +35,6 @@ public class Serializer implements JsonSerializer<DateTime>, JsonDeserializer<Da
     public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
             throws JsonParseException
     {
-
-        Log.v("MY LOCALDATE DESERIALIZED",json.toString());
         String normJson=json.toString().substring(1,json.toString().length()-1);
         return fmt.parseLocalDate(normJson).toDateTimeAtStartOfDay();
     }

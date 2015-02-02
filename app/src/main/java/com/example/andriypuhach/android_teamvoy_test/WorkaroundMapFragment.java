@@ -13,6 +13,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 /**
  * Created by andriypuhach on 1/20/15.
  */
+
+/**
+ * клас забезпечує можливість скролу всередині карти що знаходиться всередині ScrollView перехоплюючи подію
+ */
 public class WorkaroundMapFragment extends SupportMapFragment {
     private OnTouchListener mListener;
 

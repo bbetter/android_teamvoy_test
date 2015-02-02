@@ -54,10 +54,11 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public int getChildrenCount(int groupPosition) {
         switch(groupPosition){
-            case VIEW_TYPE_INFO:return 1;
             case VIEW_TYPE_CAST:return movie.getDetails().getCredits().getCast().size();
             case VIEW_TYPE_CREW:return movie.getDetails().getCredits().getCrew().size();
             case VIEW_TYPE_NOTES:return movie.getDetails().getNotes().size();
+            case VIEW_TYPE_VIDEO:return movie.getDetails().getVideosWrapper().getVideos().size();
+            case VIEW_TYPE_REVIEW:return movie.getDetails().getReviewWrapper().getReviews().size();
             default:return 1;
         }
     }

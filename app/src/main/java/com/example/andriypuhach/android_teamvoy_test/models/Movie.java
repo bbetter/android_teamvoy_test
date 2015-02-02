@@ -16,11 +16,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * модель фільм
+ * містить також внутрішні класи для відображення зображень ,нотаток,рецензій і т.д
+ */
 public class Movie implements Serializable {
     private final transient static String ImageURL = "https://image.tmdb.org/t/p/";
     private final transient static File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/android_teamvoy_test");
     public static transient List<Movie> favorites;
+
+    /**
+     * цей статичний блок відповідає за завантаження даних про улюблені фільми із бази даних
+     */
     static{
         favorites=new ArrayList<>();
         refreshFavorites();
@@ -567,8 +574,13 @@ public class Movie implements Serializable {
             }
             private List<Backdrop> backdrops;
         }
+
+        /**
+         * якщо на девайсі не підключені google play services то відео не буде відображатись
+         */
         public static class Videos implements Serializable{
             public static class Video implements Serializable{
+
                 public final static String YOUTUBE_API_KEY="AIzaSyDuoKjXOkrcIABTNCwhnVdZye4tQ0yHtBE";
                 String key;
                 String name;
@@ -741,6 +753,7 @@ public class Movie implements Serializable {
                 this.crew = crew;
             }
         }
+
         public static class Reviews implements Serializable{
             public static class Review implements Serializable{
                 private String author;
@@ -800,7 +813,6 @@ public class Movie implements Serializable {
             }
         }
 
-        //note окремо бо підтягується з бази а не з інтернету
         public static class Note implements Serializable {
             private int id;
             private String noteTitle;

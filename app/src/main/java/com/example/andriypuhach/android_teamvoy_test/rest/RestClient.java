@@ -27,7 +27,9 @@ import retrofit.converter.GsonConverter;
  * Created by andriypuhach on 1/13/15.
  */
 
-
+/**
+ * рест клієнт необхідний для отримання та передавання даних за допомогою відповідного API
+ */
 public class RestClient {
     private static final String BASE_URL="https://api.themoviedb.org/3";
     public static String requestToken="";
