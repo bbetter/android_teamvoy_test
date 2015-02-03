@@ -10,7 +10,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -223,7 +225,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      */
     void refreshListBySearch(String search) {
         if(currentSearchType.equals("Звичайний пошук")) {
-            RestClient.getApi().search(search, currentSearchPage,this);
+            RestClient.getApi().search(search, currentSearchPage,"ngram",this);
         }
         else{
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
@@ -637,7 +639,32 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             }
         });
         searchEditText= (EditText) findViewById(R.id.searchMovieEdit);
-        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isOnline()) {
+                    if (searchEditText.getText().toString().equals("")) {
+                        currentTask = tabs.getCurrentTabTag();
+                        refreshListByTab();
+                    } else {
+                        currentTask = "search";
+                        String encoded=Uri.encode(searchEditText.getText().toString());
+                        refreshListBySearch(encoded);
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+       /* searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (event != null && event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
@@ -647,14 +674,15 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                             refreshListByTab();
                         } else {
                             currentTask = "search";
-                            refreshListBySearch(Uri.encode(searchEditText.getText().toString()));
+                            String encoded=Uri.encode(searchEditText.getText().toString());
+                            refreshListBySearch(encoded);
                         }
                         return true;
                     }
                 }
                 return false;
             }
-        });
+        });*/
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(detailsListener);
         registerForContextMenu(listView);

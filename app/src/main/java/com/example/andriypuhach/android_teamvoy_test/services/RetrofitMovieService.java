@@ -23,7 +23,7 @@ public interface RetrofitMovieService {
     @GET("/movie/{id}?api_key=" + apiKey)
     public void getDetails(@Path("id") int id,@Query("append_to_response")String appendToResponse,Callback<Movie.Details> det);
     @GET("/search/movie?api_key=" + apiKey)
-    public void search(@Query("query") String query, @Query("page") int page, Callback<MovieRequestResult> movieRes);
+    public void search(@Query("query") String query, @Query("page") int page,@Query("search_type") String search, Callback<MovieRequestResult> movieRes);
     @GET("/authentication/token/new?api_key=" + apiKey)
     public void getToken(Callback<JsonElement> jsonResult);
     @GET("/authentication/token/validate_with_login?api_key=" + apiKey)
