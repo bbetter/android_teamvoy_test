@@ -49,6 +49,7 @@ import com.facebook.widget.LoginButton;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -204,6 +205,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      * @param totalPages
      */
     void refreshList(ArrayList<Movie> movies,int currentPage,int totalPages){
+
         listAdapter.setMovies(movies);
         if(movies.size()==0) {
             currentPage=0;

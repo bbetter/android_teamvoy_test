@@ -28,6 +28,8 @@ import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit.Callback;
@@ -234,7 +236,11 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
         Toast.makeText(getApplicationContext(),"Can't load movie details",Toast.LENGTH_LONG).show();
     }
     public void refreshStuff(){
-        List<String> images=movie.getDetails().getImages().getImagePathes();
+        Movie.Details.Images imageWrapper =movie.getDetails().getImages();
+        List<String> images;
+        if(imageWrapper!=null)
+        images=new ArrayList<>(Arrays.asList(imageWrapper.getImagesCommaSeparatedList().split(",")));
+        else images= new ArrayList<>();
         if(images.isEmpty()){
             TextSliderView view = new TextSliderView(this);
             view

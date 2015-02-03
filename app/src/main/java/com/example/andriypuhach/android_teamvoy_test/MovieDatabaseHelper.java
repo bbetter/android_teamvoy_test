@@ -9,6 +9,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.joda.time.DateTime;
 
@@ -45,17 +47,22 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     private final String HOMEPAGE_COLUMN="homePage";
     private final String POPULARITY_COLUMN="popularity";
     private final String STATUS_COLUMN="status";
-    private final String GENRES_COLUMN="genres";
-    private final String COMPANIES_COLUMN="companies";
-    private final String IMAGES_COLUMN="images";
     private final String VOTE_AVERAGE_COLUMN="voteAverage";
     private final String OVERVIEW_COLUMN="overview";
+    private final String VIDEOS_COLUMN="videos_json";
+    private final String REVIEWS_COLUMN="reviews_json";
+    private final String CREDITS_COLUMN="credits_json";
+    private final String GENRES_COLUMN="genres_json";
+    private final String COMPANIES_COLUMN="companies_json";
+    private final String IMAGES_COLUMN="images_json";
+    private final String COUNTRIES_COLUMN="countries_json";
+    private final String LANGUAGES_COLUMN="languages_json";
 
     private final String [] MOVIE_COLUMNS={MOVIE_ID_COLUMN,
             ORIGINAL_TITLE_COLUMN,TITLE_COLUMN,POSTER_PATH_COLUMN,
             RELEASE_DATE_COLUMN,BUDGET_COLUMN,REVENUE_COLUMN,
-            HOMEPAGE_COLUMN,POPULARITY_COLUMN,STATUS_COLUMN,
-            GENRES_COLUMN,COMPANIES_COLUMN,IMAGES_COLUMN,VOTE_AVERAGE_COLUMN,OVERVIEW_COLUMN};
+            HOMEPAGE_COLUMN,POPULARITY_COLUMN,STATUS_COLUMN,VOTE_AVERAGE_COLUMN,OVERVIEW_COLUMN,
+            GENRES_COLUMN,COMPANIES_COLUMN,IMAGES_COLUMN,VIDEOS_COLUMN,REVIEWS_COLUMN,COUNTRIES_COLUMN,LANGUAGES_COLUMN,CREDITS_COLUMN};
     //endregion
 
     //region Favorites Columns
@@ -68,6 +75,8 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     private final static String SELECT_QUERY="SELECT <COLUMNS> FROM <TABLE_NAME>";
 
     private String quotate(String str){
+        if(str==null) return "' '";
+        if(str.length()==0) return "' '";
         return "\'"+str.replace("'","''")+"\'";
     }
     public MovieDatabaseHelper(Context context) {
@@ -93,11 +102,17 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 +HOMEPAGE_COLUMN+" text,"
                 +POPULARITY_COLUMN+" double,"
                 +STATUS_COLUMN+" text,"
+                +VOTE_AVERAGE_COLUMN+" double,"
+                +OVERVIEW_COLUMN+" text,"
                 +GENRES_COLUMN+" text,"
                 +COMPANIES_COLUMN+" text,"
                 +IMAGES_COLUMN+" text,"
-                +VOTE_AVERAGE_COLUMN+" double,"
-                +OVERVIEW_COLUMN+" text");
+                +VIDEOS_COLUMN+" text,"
+                +REVIEWS_COLUMN+" text,"
+                +COUNTRIES_COLUMN+" text,"
+                +LANGUAGES_COLUMN+" text,"
+                +CREDITS_COLUMN+" text"
+                );
 
         String noteTableCreateQuery=CREATE_TABLE_QUERY
                 .replace("<TABLE_NAME>", NOTES_TABLE_NAME)
@@ -126,22 +141,27 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void insertNote(Context context,Movie movie,Movie.Details.Note note){
-        //TODO: simplify
-        String [] movieValues={String.valueOf(movie.getId()),
-                movie.getOriginal_title()!=null?quotate(movie.getOriginal_title()):null,
-                movie.getTitle()!=null?quotate(movie.getTitle()):null,
-                (!movie.getPoster_path().equals("") || !movie.getPoster_path().equals(null)) ?quotate(movie.getPoster_path()):null,
+        String [] movieValues={
+                String.valueOf(movie.getId()),
+                quotate(movie.getOriginal_title()),
+                quotate(movie.getTitle()),
+                quotate(movie.getPoster_path()),
                 movie.getRelease_date()!=null?quotate(movie.getRelease_date().toLocalDate().toString()):null,
                 String.valueOf(movie.getDetails().getBudget()),
                 String.valueOf(movie.getDetails().getRevenue()),
-                movie.getDetails().getHomepage()!=null?quotate(movie.getDetails().getHomepage()):null,
+                quotate(movie.getDetails().getHomepage()),
                 String.valueOf(movie.getPopularity()),
-                movie.getDetails().getStatus()!=null?quotate(movie.getDetails().getStatus()):null,
-                quotate(movie.getDetails().getGenresCommaSeparatedList()),
-                quotate(movie.getDetails().getCompaniesCommaSeparatedList()),
-                movie.getDetails().getImages().getImagePathes()!=null?quotate(movie.getDetails().getImages().getImagesCommaSeparatedList()):null,
+                quotate(movie.getDetails().getStatus()),
                 String.valueOf(movie.getVote_average()),
-                quotate(movie.getDetails().getOverview())
+                quotate(movie.getDetails().getOverview()),
+                quotate(movie.getDetails().getGenresJson()),
+                quotate(movie.getDetails().getCompaniesJson()),
+                quotate(movie.getDetails().getImages().getImagesJson()),
+                quotate(movie.getDetails().getVideosJson()),
+                quotate(movie.getDetails().getReviewsJson()),
+                quotate(movie.getDetails().getCountriesJson()),
+                quotate(movie.getDetails().getLanguagesJson()),
+                quotate(movie.getDetails().getCreditsJson())
 };
         String tryGetMovieQuery=SELECT_QUERY
                 .replace("<TABLE_NAME>",MOVIES_TABLE_NAME)
@@ -264,6 +284,7 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor=getReadableDatabase().rawQuery(query,null);
         try {
             while (cursor.moveToNext()) {
+
                 Movie film = new Movie();
                 film.setId(cursor.getInt(cursor.getColumnIndex(MOVIE_ID_COLUMN)));
                 film.setOriginal_title(cursor.getString(cursor.getColumnIndex(ORIGINAL_TITLE_COLUMN)));
@@ -276,18 +297,41 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
                 details.setBudget(cursor.getFloat(cursor.getColumnIndex(BUDGET_COLUMN)));
                 details.setRevenue(cursor.getFloat(cursor.getColumnIndex(REVENUE_COLUMN)));
                 details.setStatus(cursor.getString(cursor.getColumnIndex(STATUS_COLUMN)));
-                String imagePathes = cursor.getString(cursor.getColumnIndex(IMAGES_COLUMN));
-                List<String> imagePathesList = new ArrayList<>(Arrays.asList(imagePathes.split(",")));
-                String genresSeparatedByCommas = cursor.getString(cursor.getColumnIndex(GENRES_COLUMN));
-                String companiesSeparatedByCommas = cursor.getString(cursor.getColumnIndex(COMPANIES_COLUMN));
-                details.setGenresSimplified(genresSeparatedByCommas);
-                details.setCompaniesSimplified(companiesSeparatedByCommas);
-                details.setImages(new Movie.Details.Images());
-                details.getImages().setImagePathes(imagePathesList);
+                String imageJson= cursor.getString(cursor.getColumnIndex(IMAGES_COLUMN));
+                String genresJson = cursor.getString(cursor.getColumnIndex(GENRES_COLUMN));
+                String companyJson = cursor.getString(cursor.getColumnIndex(COMPANIES_COLUMN));
+                String countryJson = cursor.getString(cursor.getColumnIndex(COUNTRIES_COLUMN));
+                String languageJson = cursor.getString(cursor.getColumnIndex(LANGUAGES_COLUMN));
+                String videoJson = cursor.getString(cursor.getColumnIndex(VIDEOS_COLUMN));
+                String reviewJson = cursor.getString(cursor.getColumnIndex(REVIEWS_COLUMN));
+                String creditJson=cursor.getString(cursor.getColumnIndex(CREDITS_COLUMN));
+                Gson converter= new Gson();
+                List<Movie.Details.Images.Backdrop> images=converter.fromJson(imageJson, new TypeToken<List<Movie.Details.Images.Backdrop>>(){}.getType());
+                Movie.Details.Credits credits = converter.fromJson(creditJson, Movie.Details.Credits.class);
+                List<Movie.Details.Country> countries = converter.fromJson(countryJson,new TypeToken<List<Movie.Details.Country>>(){}.getType());
+                List<Movie.Details.Company> companies = converter.fromJson(companyJson,new TypeToken<List<Movie.Details.Company>>(){}.getType());
+                List<Movie.Details.Genre> genres = converter.fromJson(genresJson,new TypeToken<List<Movie.Details.Genre>>(){}.getType());
+                List<Movie.Details.Language> languages = converter.fromJson(languageJson,new TypeToken<List<Movie.Details.Language>>(){}.getType());
+                Movie.Details.Reviews reviews = converter.fromJson(reviewJson,Movie.Details.Reviews.class);
+                Movie.Details.Videos videos = converter.fromJson(videoJson,Movie.Details.Videos.class);
+                Movie.Details.Images im = new Movie.Details.Images();
+                im.setBackdrops(images);
+                details.setImages(im);
+                details.setReviews(reviews);
+                details.setCredits(credits);
+                details.setProduction_companies(companies);
+                details.setGenres(genres);
+                details.setSpoken_languages(languages);
+                details.setProduction_countries(countries);
                 details.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW_COLUMN)));
+                details.setVideosWrapper(videos);
                 film.setDetails(details);
                 movies.add(film);
             }
+        }
+        catch(Exception e){
+            Exception exception=e;
+            exception.getMessage();
         }
         finally {
             cursor.close();

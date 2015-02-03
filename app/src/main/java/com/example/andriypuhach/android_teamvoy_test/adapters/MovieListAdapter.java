@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MovieListAdapter extends BaseAdapter {
     private Context context;
@@ -34,7 +35,9 @@ public class MovieListAdapter extends BaseAdapter {
         movies = mv;
         notifyDataSetChanged();
     }
-
+    public List<Movie> getMovies(){
+        return movies;
+    }
     public Movie getMovie(int i) {
         return movies.get(i);
     }
@@ -69,7 +72,7 @@ public class MovieListAdapter extends BaseAdapter {
         }
         Movie item = movies.get(position);
 
-        Picasso.with(context).load(item.getPosterURL(Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivPoster);
+        Picasso.with(context).load(Movie.transformPathToURL(item.getPoster_path(), Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivPoster);
         DateTime releaseDate = item.getRelease_date();
         String dateYear = "";
         if (releaseDate != null && releaseDate!=DateTime.now()) {

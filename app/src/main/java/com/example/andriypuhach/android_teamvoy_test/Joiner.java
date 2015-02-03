@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class Joiner {
     public static String join(List<String> stringList,char separator){
+        if(stringList.size()==0) return  "";
         Iterator i = stringList.iterator();
         StringBuilder sb = new StringBuilder();
         for (;;) {

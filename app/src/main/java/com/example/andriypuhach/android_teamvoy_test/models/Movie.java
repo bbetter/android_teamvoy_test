@@ -3,6 +3,8 @@ package com.example.andriypuhach.android_teamvoy_test.models;
 import android.os.Environment;
 
 import com.example.andriypuhach.android_teamvoy_test.Joiner;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.joda.time.DateTime;
 
@@ -46,10 +48,6 @@ public class Movie implements Serializable {
 
     public static String transformPathToURL(String cutPath, ImageSize size) {
         return ImageURL + size.toString() + cutPath;
-    }
-
-    public String getPosterURL(ImageSize size) {
-        return ImageURL + size.toString() + poster_path;
     }
 
     public int getId() {
@@ -222,15 +220,10 @@ public class Movie implements Serializable {
         private Reviews reviews;
 
         private List<Note> notes;
-
         private List<Genre> genres;
         private List<Company> production_companies;
         private List<Country> production_countries;
         private List<Language> spoken_languages;
-
-        //через кому
-        private String genresSimplified;
-        private String companiesSimplified;
 
         public Details() {
 
@@ -274,38 +267,9 @@ public class Movie implements Serializable {
 
         public void setGenres(List<Genre> genres) {
             this.genres = genres;
-            setGenresSimplified(getGenresCommaSeparatedList());
         }
 
-        public String getGenresCommaSeparatedList(){
-            List<String> genreStrings=new ArrayList<>();
-            if(genres!=null) {
-                for (Genre g : genres) {
-                    genreStrings.add(g.getName());
-                }
-                if(genreStrings.size()!=0)
-                return Joiner.join(genreStrings, ',');
-            }
-            else{
-                return getGenresSimplified();
-            }
-            return "";
-        }
-
-        public String getCompaniesCommaSeparatedList(){
-            if(genres!=null) {
-                List<String> companyStrings = new ArrayList<>();
-                for (Company c : production_companies) {
-                    companyStrings.add(c.getName());
-                }
-                if(companyStrings.size()!=0)
-                return Joiner.join(companyStrings, ',');
-            }
-            else{
-                return getCompaniesSimplified();
-            }
-            return "";
-        }
+      
 
         public float getRevenue() {
             return revenue;
@@ -329,7 +293,6 @@ public class Movie implements Serializable {
 
         public void setProduction_companies(List<Company> production_companies) {
             this.production_companies = production_companies;
-            setCompaniesSimplified(getCompaniesCommaSeparatedList());
         }
 
         public List<Country> getProduction_countries() {
@@ -354,22 +317,6 @@ public class Movie implements Serializable {
 
         public void setNotes(List<Note> notes) {
             this.notes = notes;
-        }
-
-        public String getGenresSimplified() {
-            return genresSimplified;
-        }
-
-        public void setGenresSimplified(String genresSimplified) {
-            this.genresSimplified = genresSimplified;
-        }
-
-        public String getCompaniesSimplified() {
-            return companiesSimplified;
-        }
-
-        public void setCompaniesSimplified(String companiesSimplified) {
-            this.companiesSimplified = companiesSimplified;
         }
 
         public Videos getVideosWrapper() {
@@ -405,7 +352,76 @@ public class Movie implements Serializable {
         }
 
 
-
+        //Json
+        public String getGenresJson(){
+            return new Gson().toJson(genres,new TypeToken<List<Genre>>(){}.getType());
+        }
+        public String getCompaniesJson(){
+            return new Gson().toJson(production_companies,new TypeToken<List<Company>>(){}.getType());
+        }
+        public String getLanguagesJson(){
+            return new Gson().toJson(spoken_languages,new TypeToken<List<Language>>(){}.getType());
+        }
+        public String getCountriesJson(){
+            return new Gson().toJson(production_countries,new TypeToken<List<Country>>(){}.getType());
+        }
+        public String getVideosJson(){
+            return new Gson().toJson(videos,Videos.class);
+        }
+        public String getReviewsJson(){
+            return new Gson().toJson(reviews,Reviews.class);
+        }
+        public String getCreditsJson(){
+            return new Gson().toJson(credits,Credits.class);
+        }
+        public String getNotesJson(){
+            return new Gson().toJson(notes,new TypeToken<List<Note>>(){}.getType());
+        }
+        //comma separated lists
+        public String getGenresCommaSeparatedList(){
+            List<String> genreStrings=new ArrayList<>();
+            if(genres!=null) {
+                for (Genre g : genres) {
+                    genreStrings.add(g.getName());
+                }
+                if(genreStrings.size()!=0)
+                    return Joiner.join(genreStrings, ',');
+            }
+            return "";
+        }
+        public String getCompaniesCommaSeparatedList(){
+            if(production_companies!=null) {
+                List<String> companyStrings = new ArrayList<>();
+                for (Company c : production_companies) {
+                    companyStrings.add(c.getName());
+                }
+                if(companyStrings.size()!=0)
+                    return Joiner.join(companyStrings, ',');
+            }
+            return "";
+        }
+        public String getCountriesCommaSeparatedList(){
+            if(production_countries!=null) {
+                List<String> countryStrings = new ArrayList<>();
+                for (Country c : production_countries) {
+                    countryStrings.add(c.getName());
+                }
+                if(countryStrings.size()!=0)
+                    return Joiner.join(countryStrings, ',');
+            }
+            return "";
+        }
+        public String getLanguagesCommaSeparatedList(){
+            if(spoken_languages!=null) {
+                List<String> languageStrings = new ArrayList<>();
+                for (Language c : spoken_languages) {
+                    languageStrings.add(c.getName());
+                }
+                if(languageStrings.size()!=0)
+                    return Joiner.join(languageStrings, ',');
+            }
+            return "";
+        }
 
         public static class Language implements Serializable {
             private String iso;
@@ -489,29 +505,28 @@ public class Movie implements Serializable {
         }
 
         public static class Images implements Serializable{
-            private List<String> imagePathes;
-
+            private List<Backdrop> backdrops;
             public List<Backdrop> getBackdrops() {
                 return backdrops;
             }
+            public void setBackdrops(List<Backdrop> backdrops) {
+                this.backdrops = backdrops;
+            }
 
-            public void setImagePathes(List<String> imagePathes) {
-                this.imagePathes = imagePathes;
+            public String getImagesJson(){
+                return new Gson().toJson(backdrops,new TypeToken<List<Backdrop>>(){}.getType());
             }
 
             public String getImagesCommaSeparatedList() {
-                return Joiner.join(getImagePathes(),',');
-            }
-            public List<String> getImagePathes() {
                 List<String> imagePathes = new ArrayList<>();
-                for(Backdrop backdrop:backdrops){
-                    imagePathes.add(backdrop.getFile_path());
+                if(backdrops!=null && backdrops.size()!=0) {
+                    for (Backdrop backdrop : backdrops) {
+                        imagePathes.add(backdrop.getFile_path());
+                    }
+                    if(imagePathes.size()!=0)
+                    return Joiner.join(imagePathes, ',');
                 }
-                return imagePathes;
-            }
-
-            public void setBackdrops(List<Backdrop> backdrops) {
-                this.backdrops = backdrops;
+                return " ";
             }
 
             public static class Backdrop implements Serializable{
@@ -570,20 +585,30 @@ public class Movie implements Serializable {
                     this.vote_count = vote_count;
                 }
             }
-            private List<Backdrop> backdrops;
         }
 
         /**
          * якщо на девайсі не підключені google play services то відео не буде відображатись
          */
         public static class Videos implements Serializable{
-            public static class Video implements Serializable{
+            private List<Video> results;
 
+            public List<Video> getVideos() {
+                return results;
+            }
+
+            public void setVideos(List<Video> videos) {
+                this.results = videos;
+            }
+
+            public static class Video implements Serializable{
+            
                 public final static String YOUTUBE_API_KEY="AIzaSyDuoKjXOkrcIABTNCwhnVdZye4tQ0yHtBE";
                 String key;
                 String name;
                 String site;
                 String type;
+                
 
                 public String getKey() {
                     return key;
@@ -616,17 +641,42 @@ public class Movie implements Serializable {
                 public void setType(String type) {
                     this.type = type;
                 }
-            }
-            public List<Video> getVideos() {
-                return results;
+
+               
             }
 
-            public void setVideos(List<Video> videos) {
-                this.results = videos;
-            }
-            private List<Video> results;
+
+
         }
         public static class Credits implements Serializable {
+            private int id;
+            private List<CastPerson> cast;
+            private List<CrewPerson> crew;
+
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public List<CastPerson> getCast() {
+                return cast;
+            }
+
+            public void setCast(List<CastPerson> cast) {
+                this.cast = cast;
+            }
+
+            public List<CrewPerson> getCrew() {
+                return crew;
+            }
+
+            public void setCrew(List<CrewPerson> crew) {
+                this.crew = crew;
+            }
 
             public static class CastPerson implements Serializable{
                 private int id;
@@ -722,37 +772,15 @@ public class Movie implements Serializable {
                     this.profile_path = profile_path;
                 }
             }
-
-            private int id;
-            private List<CastPerson> cast;
-            private List<CrewPerson> crew;
-
-            public int getId() {
-                return id;
-            }
-
-            public void setId(int id) {
-                this.id = id;
-            }
-
-            public List<CastPerson> getCast() {
-                return cast;
-            }
-
-            public void setCast(List<CastPerson> cast) {
-                this.cast = cast;
-            }
-
-            public List<CrewPerson> getCrew() {
-                return crew;
-            }
-
-            public void setCrew(List<CrewPerson> crew) {
-                this.crew = crew;
-            }
         }
 
         public static class Reviews implements Serializable{
+            private int page;
+            private int total_pages;
+            private List<Review> results;
+            public String getReviewJson(){
+                return new Gson().toJson(results,new TypeToken<List<Review>>(){}.getType());
+            }
             public static class Review implements Serializable{
                 private String author;
                 private String url;
@@ -782,9 +810,6 @@ public class Movie implements Serializable {
                     this.content = content;
                 }
             }
-            private int page;
-            private int total_pages;
-            private List<Review> results;
 
             public int getPage() {
                 return page;
