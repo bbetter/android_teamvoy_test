@@ -145,7 +145,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
 
                 }
                 else if(groupPosition==5){
-                    DetailsExpandableListAdapter.loaders[childPosition].release();
+
                     if(movie.getDetails().getNotes().size()>childPosition){
                         Movie.Details.Note note= movie.getDetails().getNotes().get(childPosition);
                         final Intent intent = new Intent(DetailsActivity.this,NoteActivity.class);
@@ -214,6 +214,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                     }
                     break;
                 }
+                data=null;
             }
         }
     }
@@ -234,6 +235,14 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     }
     public void refreshStuff(){
         List<String> images=movie.getDetails().getImages().getImagePathes();
+        if(images.isEmpty()){
+            TextSliderView view = new TextSliderView(this);
+            view
+                    .image(R.drawable.icon)
+                    .error(R.drawable.failed_to_load)
+                    .setScaleType(BaseSliderView.ScaleType.Fit);
+            slider.addSlider(view);
+        }
         for(String str: images){
             TextSliderView view = new TextSliderView(this);
             view
@@ -241,7 +250,6 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                     .error(R.drawable.failed_to_load)
                     .setScaleType(BaseSliderView.ScaleType.Fit);
             slider.addSlider(view);
-
         }
         movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
         detailsListAdapter= new DetailsExpandableListAdapter(DetailsActivity.this,movie);

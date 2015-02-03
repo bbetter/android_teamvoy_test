@@ -126,10 +126,11 @@ public class MovieDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void insertNote(Context context,Movie movie,Movie.Details.Note note){
+        //TODO: simplify
         String [] movieValues={String.valueOf(movie.getId()),
                 movie.getOriginal_title()!=null?quotate(movie.getOriginal_title()):null,
                 movie.getTitle()!=null?quotate(movie.getTitle()):null,
-                !movie.getPoster_path().equals("") ?quotate(movie.getPoster_path()):null,
+                (!movie.getPoster_path().equals("") || !movie.getPoster_path().equals(null)) ?quotate(movie.getPoster_path()):null,
                 movie.getRelease_date()!=null?quotate(movie.getRelease_date().toLocalDate().toString()):null,
                 String.valueOf(movie.getDetails().getBudget()),
                 String.valueOf(movie.getDetails().getRevenue()),

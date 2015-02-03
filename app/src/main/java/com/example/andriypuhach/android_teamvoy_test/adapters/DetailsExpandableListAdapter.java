@@ -105,6 +105,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     public void releaseLoader(){
         for(YouTubeThumbnailLoader loader :loaders){
+            if(loader!=null)
             loader.release();
         }
     }

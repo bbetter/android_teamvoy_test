@@ -213,6 +213,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         if (listView.getHeaderViewsCount() == 0)
             listView.addHeaderView(header);
         listView.setAdapter(listAdapter);
+        listView.invalidateViews();
     }
     /**
      * метод оновлює дані в ListAdapter виконавши запит на пошук рядка
