@@ -16,23 +16,21 @@ import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.HeaderViewListAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TabHost;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.andriypuhach.android_teamvoy_test.FacebookManager;
@@ -51,9 +49,7 @@ import com.facebook.widget.LoginButton;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.squareup.picasso.Picasso;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -68,11 +64,9 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     private Button theMovieDatabaseLoginButton;
     public static ListView listView;
     private EditText searchEditText;
-    private View header;
 
     private UiLifecycleHelper uiHelper; //facebook helper thing
     private int [] resources={R.string.tmbd_login_text,R.string.tmbd_logout_text};
-
 
     class AddRemoveCallback implements Callback<JsonElement>{
         String goal;
@@ -85,9 +79,9 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         public void success(JsonElement jsonElement, Response response) {
             Toast.makeText(getApplicationContext(),"Успішно "+((addRemove)?"додано":"видалено"),Toast.LENGTH_LONG).show();
             if(goal.equals("watchlist") && !addRemove)
-                refreshWatchList();
+                refreshWatchList(false);
             else if(!addRemove)
-                refreshFavorites();
+                refreshFavorites(false);
         }
 
         @Override
@@ -95,180 +89,101 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             Toast.makeText(getApplicationContext(),"Не вдалось здійснити дану операцію",Toast.LENGTH_LONG).show();
         }
     }
+    public class InfiniteScrollListener implements AbsListView.OnScrollListener {
+        private int totalLoadedCount;
 
+        @Override
+        public void onScrollStateChanged(AbsListView absListView, int i)
+        {
+        }
 
-    /**
-     * метод створює заголовок списку
-     * @return повертає View створеного заголовку
-     */
-    View createHeader() {
-        View v = getLayoutInflater().inflate(R.layout.header,listView,false);
-        v.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (currentTask) {
-                    case "popular":
-                        if (currentPopularPage < totalPages) {
-                            currentPopularPage++;
-                        }
-                        break;
+        @Override
+        public void onScroll(final AbsListView absListView, final int firstVisible, int visibleCount, int totalCount)
+        {
+            boolean loadMore = totalCount != totalLoadedCount && firstVisible + visibleCount >= totalCount;
+            if (loadMore)
+            {
+                Log.i("LOADING_MORE","LOADING MORE from "+currentPage);
+                totalLoadedCount = totalCount;
+                if(totalLoadedCount/20.0<totalPages) {
+                    runOnUiThread(new Runnable() {
 
-                    case "upcoming":
-                        if (currentUpcomingPage<totalPages) {
-                            currentUpcomingPage++;
+                        @Override
+                        public void run() {
+                            absListView.smoothScrollToPosition(firstVisible);
+                            switch (currentTask) {
+                                default:
+                                    refreshListByTab(true);
+                                    break;
+                                case "watchlist":
+                                    refreshWatchList(true);
+                                    break;
+                                case "favorite":
+                                    refreshFavorites(true);
+                                case "search":
+                                    refreshListBySearch(Uri.encode(((EditText) findViewById(R.id.searchMovieEdit)).getText().toString()), true);
+                            }
+
                         }
-                        break;
-                    case "top_rated":
-                        if(currentTopRatedPage<totalPages){
-                            currentTopRatedPage++;
-                        }
-                        break;
-                    case "favorite":
-                        if(currentFavoritePage<totalPages) {
-                            currentFavoritePage++;
-                            refreshFavorites();
-                            return ;
-                        }
-                        break;
-                    case "watchlist":
-                        if(currentWatchListPage<totalPages){
-                            currentWatchListPage++;
-                            refreshWatchList();
-                        }
-                    case "search":
-                        if(currentSearchPage<totalPages){
-                            currentSearchPage++;
-                            refreshListBySearch(searchEditText.getText().toString());
-                            return;
-                        }
-                    default:
-                        if(currentPopularPage<totalPages){
-                            currentPopularPage++;
-                        }
-                        break;
+                    });
                 }
-                refreshListByTab();
-            }
-        });
 
-        v.findViewById(R.id.prevButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (currentTask) {
-                    case "popular":
-                        if (currentPopularPage > 1) {
-                            currentPopularPage--;
-                        }
-                        break;
-
-                    case "upcoming":
-                        if (currentUpcomingPage>1) {
-                            currentUpcomingPage--;
-                        }
-                        break;
-                    case "top_rated":
-                        if(currentTopRatedPage>1){
-                            currentTopRatedPage--;
-                        }
-                        break;
-                    case "favorite":
-                        if(currentFavoritePage>1) {
-                            currentFavoritePage--;
-                            refreshFavorites();
-                            return ;
-                        }
-                        break;
-                    case "search":
-                        if(currentSearchPage>1){
-                            currentSearchPage--;
-                            refreshListBySearch(Uri.encode(searchEditText.getText().toString()));
-                            return;
-                        }
-                    case "watchlist":
-                        if(currentWatchListPage>1){
-                            currentWatchListPage--;
-                            refreshWatchList();
-                        }
-                    default:
-                        if(currentPopularPage>1){
-                            currentPopularPage--;
-                        }
-                        break;
-                }
-                refreshListByTab();
             }
-        });
-        return v;
+        }
     }
     /**
      * метод оновлює список фільмів і заголовок
      * @param movies
-     * @param currentPage
-     * @param totalPages
      */
-    void refreshList(ArrayList<Movie> movies,int currentPage,int totalPages){
-
-        listAdapter.setMovies(movies);
-        if(movies.size()==0) {
-            currentPage=0;
-            totalPages=0;
+    void refreshList(ArrayList<Movie> movies,boolean append){
+        if(append)
+        ((MovieListAdapter)listView.getAdapter()).addMovies(movies);
+        else {
+            listAdapter.setMovies(movies);
+            listView.setAdapter(listAdapter);
         }
-        ((TextView) header.findViewById(R.id.currentPageView)).setText(currentPage + " of " + totalPages);
-        if (listView.getHeaderViewsCount() == 0)
-            listView.addHeaderView(header);
-        listView.setAdapter(listAdapter);
-        listView.invalidateViews();
     }
     /**
      * метод оновлює дані в ListAdapter виконавши запит на пошук рядка
      * @param search рядок для пошуку
      */
-    void refreshListBySearch(String search) {
+    void refreshListBySearch(String search,boolean next) {
         if(currentSearchType.equals("Звичайний пошук")) {
-            RestClient.getApi().search(search, currentSearchPage,"ngram",this);
+            RestClient.getApi().search(search, next?++currentPage:currentPage,"ngram",this);
         }
         else{
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
-            ArrayList<Movie> movies=(ArrayList<Movie>)dbHelper.searchByNote(search);
+            final ArrayList<Movie> movies=(ArrayList<Movie>)dbHelper.searchByNote(search);
             totalPages = (movies.size() < 20) ? 1 : (int) Math.ceil((double) movies.size() / 20.0);
-            refreshList(movies,currentSearchPage,totalPages);
+            refreshList(movies,false);
         }
     }
     /**
      * метод оновлює список фільмів що знаходяться у списку "до перегляду"
      */
-    void refreshWatchList(){
-        RestClient.getApi().getWatchListMovies(RestClient.sessionId,currentWatchListPage,this);
+    void refreshWatchList(boolean next){
+        RestClient.getApi().getWatchListMovies(RestClient.sessionId,next?++currentPage:currentPage,this);
     }
     /**
      * оновлює список данними в залежності від обраної вкладки
      */
-    void refreshListByTab() {
-        int currentPage=1;
-        switch(currentTask){
-            case "popular":currentPage=currentPopularPage;
-                break;
-            case "upcoming":currentPage=currentUpcomingPage;
-                break;
-            case "top_rated":currentPage=currentTopRatedPage;
-                break;
-            default:
-                currentPage=currentPopularPage;
-                break;
-        }
-
-        RestClient.getApi().getMovies(currentTask,currentPage,this);
+    void refreshListByTab(boolean next) {
+        RestClient.getApi().getMovies(currentTask,next?++currentPage:currentPage,this);
     }
     private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
         @Override
         public void onTabChanged(String tabId) {
             currentTask = tabId;
+            currentPage=1;
+            if(listView.getAdapter()!=null)
+                ((MovieListAdapter)listView.getAdapter()).getMovies().clear();
+
             switch(currentTask){
-                case "favorite":refreshFavorites();
+                case "favorite":refreshFavorites(false);
                     break;
-                case "watchlist":refreshWatchList();
+                case "watchlist":refreshWatchList(false);
                     break;
-                default:refreshListByTab();
+                default:refreshListByTab(false);
                     break;
             }
         }
@@ -367,34 +282,31 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     /**
      * оновлює список улюблених фільмів, або із бази даних або із сайту themoviedb.org
      */
-    void refreshFavorites() {
+    void refreshFavorites(boolean next) {
         if(!tmbdConnected) {
             Movie.refreshFavorites();
             if (Movie.favorites != null) {
                 totalPages = (Movie.favorites.size() < 20) ? 1 : (int) Math.ceil((double) Movie.favorites.size() / 20.0);
-                int begin = ((currentFavoritePage - 1) * 20);
+                int begin = ((next?++currentPage:currentPage - 1) * 20);
                 int end = begin + 20;
                 if (Movie.favorites.size() <= end)
                     end = Movie.favorites.size();
-                refreshList(new ArrayList<>(Movie.favorites.subList(begin,end)),currentFavoritePage,totalPages);
+                refreshList(new ArrayList<>(Movie.favorites.subList(begin,end)),false);
             } else {
                 listAdapter.setMovies(new ArrayList<Movie>());
                 listView.setAdapter(listAdapter);
             }
         }
         else{
-            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,currentFavoritePage,this);
+            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,next?++currentPage:currentPage,this);
         }
     }
-    /**
-     * on list item click listener, starts details activity
-     */
     private OnItemClickListener detailsListener = new OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             final Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-            MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) listView.getAdapter()).getWrappedAdapter();
-            final Movie movie = adapter.getMovie(position - 1);
+            MovieListAdapter adapter = (MovieListAdapter) listView.getAdapter();
+            final Movie movie = adapter.getMovie(position);
             intent.putExtra("Movie",movie);
             startActivity(intent);
         }
@@ -425,12 +337,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         }
     };
 
-    private int currentPopularPage = 1;
+/*    private int currentPopularPage = 1;
     private int currentUpcomingPage = 1;
     private int currentTopRatedPage = 1;
     private int currentFavoritePage = 1;
-    private int currentWatchListPage=1;
-    private int currentSearchPage = 1;
+    private int currentWatchListPage=1;*/
+    private int currentPage = 1;
     private int totalPages = 1000;
 
     private String currentTask = "popular";
@@ -445,7 +357,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
     /**
      *  метод перевіряє чи користувач під'єднаний до мережі
-     * @return повертає true якщо під'єднаний інакше(навіть ящко підключення саме триває) - ні
+     * @return повертає true якщо під'єднаний інакше(навіть ящко підключення саме триває) - false
      */
     boolean isOnline() {
         ConnectivityManager cm =
@@ -550,6 +462,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         uiHelper = new UiLifecycleHelper(this, statusCallback);
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
         prefs=getPreferences(MODE_PRIVATE);
         RestClient.sessionId=prefs.getString("SessionID","");
         RestClient.requestToken=prefs.getString("RequestToken","");
@@ -559,7 +472,6 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             tmbdConnected=true;
         }
         listAdapter = new MovieListAdapter(this);
-        header = createHeader();
         theMovieDatabaseLoginButton =(Button)findViewById(R.id.login_tmbd_button);
         theMovieDatabaseLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -650,11 +562,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                 if (isOnline()) {
                     if (searchEditText.getText().toString().equals("")) {
                         currentTask = tabs.getCurrentTabTag();
-                        refreshListByTab();
+                        refreshListByTab(false);
                     } else {
                         currentTask = "search";
+                        currentPage=1;
                         String encoded=Uri.encode(searchEditText.getText().toString());
-                        refreshListBySearch(encoded);
+                        refreshListBySearch(encoded,false);
                     }
                 }
             }
@@ -664,27 +577,10 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
             }
         });
-       /* searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (event != null && event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    if (isOnline()) {
-                        if (searchEditText.getText().toString().equals("")) {
-                            currentTask = tabs.getCurrentTabTag();
-                            refreshListByTab();
-                        } else {
-                            currentTask = "search";
-                            String encoded=Uri.encode(searchEditText.getText().toString());
-                            refreshListBySearch(encoded);
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });*/
+
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(detailsListener);
+        listView.setOnScrollListener(new InfiniteScrollListener());
         registerForContextMenu(listView);
         tabs = (TabHost) findViewById(R.id.tabhost);
         tabs.setup();
@@ -758,6 +654,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         }
         theMovieDatabaseLoginButton.setText(getResources().getText(resources[tmbdConnected ? 1 : 0]));
         tabs.getTabWidget().getChildTabViewAt(4).setVisibility(tmbdConnected ? View.VISIBLE : View.GONE);
+
     }
 
     @Override
@@ -788,9 +685,8 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     @Override
     public void success(MovieRequestResult movieRequestResult, Response response) {
         if (movieRequestResult.getResults() != null) {
-            int cp = movieRequestResult.getPage();
             totalPages = movieRequestResult.getTotal_pages();
-            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), cp, totalPages);
+            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), (movieRequestResult.getPage() != 1));
         }
     }
 

@@ -224,7 +224,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
     @Override
     public void success(Movie.Details details, Response response) {
         movie.setDetails(details);
-        MovieListAdapter adapter = (MovieListAdapter) ((HeaderViewListAdapter) MainActivity.listView.getAdapter()).getWrappedAdapter();
+        MovieListAdapter adapter = (MovieListAdapter)MainActivity.listView.getAdapter();
         adapter.getMovieByMovieID(movie.getId()).setDetails(movie.getDetails());
         MainActivity.listView.setAdapter(adapter);
         refreshStuff();

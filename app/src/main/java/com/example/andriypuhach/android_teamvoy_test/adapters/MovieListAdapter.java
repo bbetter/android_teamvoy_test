@@ -1,5 +1,6 @@
 package com.example.andriypuhach.android_teamvoy_test.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
@@ -11,7 +12,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.activities.MainActivity;
 import com.example.andriypuhach.android_teamvoy_test.models.*;
+import com.example.andriypuhach.android_teamvoy_test.rest.RestClient;
 import com.squareup.picasso.Picasso;
 
 
@@ -31,6 +34,15 @@ public class MovieListAdapter extends BaseAdapter {
         inflater = LayoutInflater.from(context);
     }
 
+    public void addMovies(ArrayList<Movie> mv){
+
+        if(movies!=null) {
+            movies.addAll(mv);
+            notifyDataSetChanged();
+        }
+        else setMovies(mv);
+
+    }
     public void setMovies(ArrayList<Movie> mv) {
         movies = mv;
         notifyDataSetChanged();
@@ -80,6 +92,8 @@ public class MovieListAdapter extends BaseAdapter {
         }
         holder.tvTitle.setText(item.getTitle() + dateYear);
         holder.rbRating.setRating((float) item.getVote_average());
+
+
         return vi;
     }
     public Movie getMovieByMovieID(int id){

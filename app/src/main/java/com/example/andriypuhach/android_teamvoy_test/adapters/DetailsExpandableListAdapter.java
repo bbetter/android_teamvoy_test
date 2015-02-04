@@ -55,14 +55,16 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
+        int size=0;
+        if(groupPosition==0) return 1;
         switch(groupPosition){
-            case VIEW_TYPE_CAST:return movie.getDetails().getCredits().getCast().size();
-            case VIEW_TYPE_CREW:return movie.getDetails().getCredits().getCrew().size();
-            case VIEW_TYPE_NOTES:return movie.getDetails().getNotes().size();
-            case VIEW_TYPE_VIDEO:return movie.getDetails().getVideosWrapper().getVideos().size();
-            case VIEW_TYPE_REVIEW:return movie.getDetails().getReviewWrapper().getReviews().size();
-            default:return 1;
+            case VIEW_TYPE_CAST:size= movie.getDetails().getCredits().getCast().size(); break;
+            case VIEW_TYPE_CREW:size= movie.getDetails().getCredits().getCrew().size(); break;
+            case VIEW_TYPE_NOTES:size= movie.getDetails().getNotes().size(); break;
+            case VIEW_TYPE_VIDEO:size= movie.getDetails().getVideosWrapper().getVideos().size();break;
+            case VIEW_TYPE_REVIEW:size= movie.getDetails().getReviewWrapper().getReviews().size();break;
         }
+        return (size>0)?size:1;
     }
 
     @Override
@@ -100,6 +102,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.lblListHeader);
         lblListHeader.setTypeface(null, Typeface.BOLD);
         lblListHeader.setText(header);
+
         return convertView;
     }
 
@@ -138,10 +141,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 case VIEW_TYPE_NOTES: {
 
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvNoteTitle==null){
-                        convertView=inflater.inflate(R.layout.note_row,parent,false);
-                        holder.tvNoteText = (TextView)convertView.findViewById(R.id.tvNoteText);
-                        holder.tvNoteTitle=(TextView)convertView.findViewById(R.id.tvNoteTitle);
-                        holder.ivNoteImage=(ImageView)convertView.findViewById(R.id.noteImage);
+                        if(movie.getDetails().getNotes().size()>0) {
+                            convertView = inflater.inflate(R.layout.note_row, parent, false);
+                            holder.tvNoteText = (TextView) convertView.findViewById(R.id.tvNoteText);
+                            holder.tvNoteTitle = (TextView) convertView.findViewById(R.id.tvNoteTitle);
+                            holder.ivNoteImage = (ImageView) convertView.findViewById(R.id.noteImage);
+                        }
+                        else{
+                            convertView=inflater.inflate(R.layout.no_items_row,parent,false);
+                            holder.tvNoInfo=(TextView) convertView.findViewById(R.id.no_info);
+
+                        }
                     }
                     else{
                        holder=(ViewHolder)convertView.getTag();
@@ -150,10 +160,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
                 case VIEW_TYPE_CAST:{
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvCastCharacter==null) {
-                        convertView = inflater.inflate(R.layout.cast_row, parent, false);
-                        holder.tvCastCharacter=(TextView)convertView.findViewById(R.id.tvCastCharacter);
-                        holder.tvCastName=(TextView)convertView.findViewById(R.id.tvCastName);
-                        holder.ivCastImage=(ImageView)convertView.findViewById(R.id.castImage);
+                        if(movie.getDetails().getCredits().getCast().size()>0) {
+                            convertView = inflater.inflate(R.layout.cast_row, parent, false);
+                            holder.tvCastCharacter = (TextView) convertView.findViewById(R.id.tvCastCharacter);
+                            holder.tvCastName = (TextView) convertView.findViewById(R.id.tvCastName);
+                            holder.ivCastImage = (ImageView) convertView.findViewById(R.id.castImage);
+                        }
+                        else{
+                            convertView=inflater.inflate(R.layout.no_items_row,parent,false);
+                            holder.tvNoInfo=(TextView) convertView.findViewById(R.id.no_info);
+
+                        }
                     }
                     else{
                         holder=(ViewHolder)convertView.getTag();
@@ -162,10 +179,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
                 case VIEW_TYPE_CREW:{
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvCrewDepartmentNJob==null) {
-                        convertView = inflater.inflate(R.layout.crew_row, parent, false);
-                        holder.tvCrewDepartmentNJob=(TextView)convertView.findViewById(R.id.tvCrewDepartmentJob);
-                        holder.tvCrewName=(TextView)convertView.findViewById(R.id.tvCrewName);
-                        holder.ivCrewImage=(ImageView)convertView.findViewById(R.id.crewImage);
+                        if(movie.getDetails().getCredits().getCrew().size()>0) {
+                            convertView = inflater.inflate(R.layout.crew_row, parent, false);
+                            holder.tvCrewDepartmentNJob = (TextView) convertView.findViewById(R.id.tvCrewDepartmentJob);
+                            holder.tvCrewName = (TextView) convertView.findViewById(R.id.tvCrewName);
+                            holder.ivCrewImage = (ImageView) convertView.findViewById(R.id.crewImage);
+                        }
+                        else{
+                            convertView=inflater.inflate(R.layout.no_items_row,parent,false);
+                            holder.tvNoInfo=(TextView) convertView.findViewById(R.id.no_info);
+
+                        }
                     }
                     else{
                         holder=(ViewHolder)convertView.getTag();
@@ -174,9 +198,16 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
                 case VIEW_TYPE_VIDEO:{
                     if(convertView==null || ((ViewHolder)convertView.getTag()).youTubeThumbnailView==null){
-                        convertView=inflater.inflate(R.layout.video_row,parent,false);
-                        holder.youTubeThumbnailView=(YouTubeThumbnailView)convertView.findViewById(R.id.ytThumbnailView);
-                        holder.tvVideoTitle=(TextView) convertView.findViewById(R.id.tvVideoTitle);
+                        if(movie.getDetails().getVideosWrapper().getVideos().size()>0) {
+                            convertView = inflater.inflate(R.layout.video_row, parent, false);
+                            holder.youTubeThumbnailView = (YouTubeThumbnailView) convertView.findViewById(R.id.ytThumbnailView);
+                            holder.tvVideoTitle = (TextView) convertView.findViewById(R.id.tvVideoTitle);
+                        }
+                        else{
+                            convertView=inflater.inflate(R.layout.no_items_row,parent,false);
+                            holder.tvNoInfo=(TextView) convertView.findViewById(R.id.no_info);
+
+                        }
                     }
                     else{
                         holder=(ViewHolder)convertView.getTag();
@@ -186,10 +217,17 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
                 case VIEW_TYPE_REVIEW:{
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvReviewAuthor==null){
-                        convertView=inflater.inflate(R.layout.review_row,parent,false);
-                        holder.tvReviewAuthor=(TextView)convertView.findViewById(R.id.tvReviewAuthor);
-                        holder.tvReviewText=(TextView) convertView.findViewById(R.id.tvReviewText);
-                        holder.ivReviewImage=(ImageView)convertView.findViewById(R.id.reviewImage);
+                        if(movie.getDetails().getReviewWrapper().getReviews().size()>0) {
+                            convertView = inflater.inflate(R.layout.review_row, parent, false);
+                            holder.tvReviewAuthor = (TextView) convertView.findViewById(R.id.tvReviewAuthor);
+                            holder.tvReviewText = (TextView) convertView.findViewById(R.id.tvReviewText);
+                            holder.ivReviewImage = (ImageView) convertView.findViewById(R.id.reviewImage);
+                        }
+                        else{
+                            convertView=inflater.inflate(R.layout.no_items_row,parent,false);
+                            holder.tvNoInfo=(TextView) convertView.findViewById(R.id.no_info);
+
+                        }
                     }
                     else{
                         holder=(ViewHolder)convertView.getTag();
@@ -216,9 +254,11 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                 break;
             case VIEW_TYPE_NOTES:
                 List<Movie.Details.Note> notes=movie.getDetails().getNotes();
-                holder.tvNoteTitle.setText(notes.get(childPosition).getNoteTitle());
-                holder.tvNoteText.setText(notes.get(childPosition).getNoteText());
-                Picasso.with(context).load("file:///"+notes.get(childPosition).getImagePath()).error(R.drawable.failed_to_load).into(holder.ivNoteImage);
+                if(notes.size()>0) {
+                    holder.tvNoteTitle.setText(notes.get(childPosition).getNoteTitle());
+                    holder.tvNoteText.setText(notes.get(childPosition).getNoteText());
+                    Picasso.with(context).load("file:///" + notes.get(childPosition).getImagePath()).error(R.drawable.failed_to_load).into(holder.ivNoteImage);
+                }
                 break;
             case VIEW_TYPE_CAST:{
                 List<Movie.Details.Credits.CastPerson> cast=movie.getDetails().getCredits().getCast();
@@ -314,6 +354,8 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
         TextView tvVideoTitle;
         YouTubeThumbnailView youTubeThumbnailView;
+
+        TextView tvNoInfo;
 
     }
 }

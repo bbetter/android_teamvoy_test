@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigationModel
+  ns = "http://schemas.android.com?import=com.android.tools.idea.editors.navigation.model.*">
+  <locations  
+    class = "java.util.ArrayList">
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.YoutubeVideoActivity"/>
+      <point      
+        x = "480"      
+        y = "1440"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.AccountActivity"/>
+      <point      
+        x = "480"      
+        y = "160"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.NoteActivity"/>
+      <point      
+        x = "480"      
+        y = "1600"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.facebook.LoginActivity"/>
+      <point      
+        x = "640"      
+        y = "1600"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.DetailsActivity"/>
+      <point      
+        x = "650"      
+        y = "1630"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.MainActivity"/>
+      <point      
+        x = "640"      
+        y = "1760"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.ActivityState"      
+        className = "com.example.andriypuhach.android_teamvoy_test.activities.ReviewActivity"/>
+      <point      
+        x = "800"      
+        y = "1760"/>
+    </statePointEntry>
+    <statePointEntry>
+      <state      
+        class = "com.android.tools.idea.editors.navigation.model.MenuState"      
+        xmlResourceName = "in_account_menu"/>
+      <point      
+        x = "1748"      
+        y = "160"/>
+    </statePointEntry>
+  </locations>
+</navigationModel>
