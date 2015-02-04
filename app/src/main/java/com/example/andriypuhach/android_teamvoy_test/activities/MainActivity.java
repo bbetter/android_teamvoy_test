@@ -78,6 +78,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         @Override
         public void success(JsonElement jsonElement, Response response) {
             Toast.makeText(getApplicationContext(),"Успішно "+((addRemove)?"додано":"видалено"),Toast.LENGTH_LONG).show();
+            currentPage=1;
             if(goal.equals("watchlist") && !addRemove)
                 refreshWatchList(false);
             else if(!addRemove)
@@ -220,7 +221,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                         selectedMovie.getTitle() +
                         "You should check it\n" +
                         Movie.transformPathToURL(selectedMovie.getPoster_path(), Movie.ImageSize.W150));
-                startActivity(Intent.createChooser(sharingIntent, "Share via"));
+                        startActivity(Intent.createChooser(sharingIntent, "Share via"));
             }
             break;
             case "Delete":{
@@ -232,6 +233,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                     if(currentTask.equals("watchlist")){
                         JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'watchlist':false}",JsonObject.class);
                         RestClient.getApi().setWatchlist(object, RestClient.sessionId,new AddRemoveCallback("watchlist",false));
+
                     }
                     else {
                         JsonObject object= new Gson().fromJson("{'media_type':'movie','media_id':" + selectedMovie.getId() + ",'favorite':false}",JsonObject.class);
@@ -253,7 +255,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         if (view.getId() == R.id.listView) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            selectedMovie = listAdapter.getMovie(info.position - 1);
+            selectedMovie = listAdapter.getMovie(info.position);
             menu.setHeaderTitle(selectedMovie.getTitle());
             List<String> listMenuItems= new ArrayList<>();
             listMenuItems.add("Share");
@@ -560,12 +562,13 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (isOnline()) {
+                    currentPage=1;
                     if (searchEditText.getText().toString().equals("")) {
                         currentTask = tabs.getCurrentTabTag();
                         refreshListByTab(false);
                     } else {
                         currentTask = "search";
-                        currentPage=1;
+
                         String encoded=Uri.encode(searchEditText.getText().toString());
                         refreshListBySearch(encoded,false);
                     }
@@ -686,7 +689,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     public void success(MovieRequestResult movieRequestResult, Response response) {
         if (movieRequestResult.getResults() != null) {
             totalPages = movieRequestResult.getTotal_pages();
-            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), (movieRequestResult.getPage() != 1));
+            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), (movieRequestResult.getPage() > 1));
         }
     }
 
