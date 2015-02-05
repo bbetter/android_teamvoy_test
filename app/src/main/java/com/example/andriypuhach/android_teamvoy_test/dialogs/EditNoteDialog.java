@@ -4,16 +4,24 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.andriypuhach.android_teamvoy_test.MovieDatabaseHelper;
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.adapters.ImageViewWithContextView;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by andriypuhach on 1/16/15.
@@ -24,7 +32,8 @@ public class EditNoteDialog extends Dialog {
 
     public final static int SELECT_PHOTO_EDIT=200;
     public static String editImagePath;
-    public static ImageView imageView;
+    public static ImageViewWithContextView imageView;
+
 
     public EditNoteDialog(Activity activity){
         super(activity);
@@ -33,6 +42,31 @@ public class EditNoteDialog extends Dialog {
     public void setEditedNote(Movie.Details.Note editedNote){
         this.editedNote=editedNote;
     }
+
+
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        if(v.getId()==R.id.uploadedImage) {
+            List<String> listMenuItems = new ArrayList<>();
+            listMenuItems.add("Delete");
+            String[] menuItems = new String[listMenuItems.size()];
+            listMenuItems.toArray(menuItems);
+            for (int i = 0; i < menuItems.length; i++) {
+                menu.add(Menu.NONE, i, i, menuItems[i]);
+                menu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        editImagePath=null;
+                        imageView.setVisibility(View.GONE);
+                        return true;
+                    }
+                });
+            }
+        }
+        super.onCreateContextMenu(menu,v,menuInfo);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +77,21 @@ public class EditNoteDialog extends Dialog {
         final EditText noteText =(EditText)findViewById(R.id.noteTextEdit);
         Button uploadButton = (Button)findViewById(R.id.uploadPhotoBtn);
         Button submitButton = (Button)findViewById(R.id.submitNoteBtn);
-        imageView = (ImageView)findViewById(R.id.uploadedImage);
+        imageView = (ImageViewWithContextView)findViewById(R.id.uploadedImage);
+
+        imageView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override
+            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                List<String> listMenuItems= new ArrayList<>();
+                listMenuItems.add("Delete");
+                String [] menuItems=new String[listMenuItems.size()];
+                listMenuItems.toArray(menuItems);
+                for (int i = 0; i < menuItems.length; i++) {
+                    menu.add(Menu.NONE, i, i, menuItems[i]);
+                }
+            }
+        });
         noteTitle.setText(editedNote.getNoteTitle());
         noteText.setText(editedNote.getNoteText());
         editImagePath=editedNote.getImagePath();

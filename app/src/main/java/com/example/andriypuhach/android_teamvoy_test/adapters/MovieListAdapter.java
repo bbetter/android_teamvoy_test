@@ -3,6 +3,7 @@ package com.example.andriypuhach.android_teamvoy_test.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,7 +83,13 @@ public class MovieListAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) vi.getTag();
         }
-        Movie item = movies.get(position);
+        Movie item=new Movie();
+        try {
+            item = movies.get(position);
+        }
+        catch(Exception e){
+            Log.w("TAG", String.valueOf(position));
+        }
 
         Picasso.with(context).load(Movie.transformPathToURL(item.getPoster_path(), Movie.ImageSize.W75)).error(R.drawable.failed_to_load).into(holder.ivPoster);
         DateTime releaseDate = item.getRelease_date();

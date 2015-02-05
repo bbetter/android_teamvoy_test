@@ -74,8 +74,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
             dbHelper.deleteNote(selectedNote.getId());
             movie.getDetails().setNotes(dbHelper.selectNoteByMovieID(movie.getId()));
             detailsListAdapter.setMovie(movie);
-            detailsListView.setVisibility(View.INVISIBLE);
-            detailsListView.setVisibility(View.VISIBLE);
+            detailsListView.setAdapter(detailsListAdapter);
         }
         else
         if(item.getTitle()=="Edit"){
@@ -204,6 +203,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                 switch (requestCode) {
 
                     case CreateNoteDialog.SELECT_PHOTO_CREATE: {
+                        CreateNoteDialog.imageView.setVisibility(View.VISIBLE);
                         CreateNoteDialog.createImagePath = null;
                         CreateNoteDialog.createImagePath=filePath;
                         Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(CreateNoteDialog.imageView);
@@ -211,6 +211,7 @@ public class DetailsActivity extends Activity implements Callback<Movie.Details>
                     }
                     break;
                     case EditNoteDialog.SELECT_PHOTO_EDIT: {
+                        EditNoteDialog.imageView.setVisibility(View.VISIBLE);
                         EditNoteDialog.editImagePath = filePath;
                         Picasso.with(getApplicationContext()).load("file:///" + filePath).error(R.drawable.failed_to_load).into(EditNoteDialog.imageView);
                     }

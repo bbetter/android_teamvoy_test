@@ -90,46 +90,70 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             Toast.makeText(getApplicationContext(),"Не вдалось здійснити дану операцію",Toast.LENGTH_LONG).show();
         }
     }
-    public class InfiniteScrollListener implements AbsListView.OnScrollListener {
-        private int totalLoadedCount;
 
-        @Override
-        public void onScrollStateChanged(AbsListView absListView, int i)
-        {
+    public abstract class EndlessScrollListener implements AbsListView.OnScrollListener {
+        // The minimum amount of items to have below your current scroll position
+        // before loading more.
+        private int visibleThreshold = 5;
+        // The current offset index of data you have loaded
+        private int currentPage = 0;
+        // The total number of items in the dataset after the last load
+        private int previousTotalItemCount = 0;
+        // True if we are still waiting for the last set of data to load.
+        private boolean loading = true;
+        // Sets the starting page index
+        private int startingPageIndex = 0;
+
+        public EndlessScrollListener() {
         }
 
+        public EndlessScrollListener(int visibleThreshold) {
+            this.visibleThreshold = visibleThreshold;
+        }
+
+        public EndlessScrollListener(int visibleThreshold, int startPage) {
+            this.visibleThreshold = visibleThreshold;
+            this.startingPageIndex = startPage;
+            this.currentPage = startPage;
+        }
+
+        // This happens many times a second during a scroll, so be wary of the code you place here.
+        // We are given a few useful parameters to help us work out if we need to load some more data,
+        // but first we check if we are waiting for the previous load to finish.
         @Override
-        public void onScroll(final AbsListView absListView, final int firstVisible, int visibleCount, int totalCount)
+        public void onScroll(AbsListView view,int firstVisibleItem,int visibleItemCount,int totalItemCount)
         {
-            boolean loadMore = totalCount != totalLoadedCount && firstVisible + visibleCount >= totalCount;
-            if (loadMore)
-            {
-                Log.i("LOADING_MORE","LOADING MORE from "+currentPage);
-                totalLoadedCount = totalCount;
-                if(totalLoadedCount/20.0<totalPages) {
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            absListView.smoothScrollToPosition(firstVisible);
-                            switch (currentTask) {
-                                default:
-                                    refreshListByTab(true);
-                                    break;
-                                case "watchlist":
-                                    refreshWatchList(true);
-                                    break;
-                                case "favorite":
-                                    refreshFavorites(true);
-                                case "search":
-                                    refreshListBySearch(Uri.encode(((EditText) findViewById(R.id.searchMovieEdit)).getText().toString()), true);
-                            }
-
-                        }
-                    });
-                }
-
+            // If the total item count is zero and the previous isn't, assume the
+            // list is invalidated and should be reset back to initial state
+            if (totalItemCount < previousTotalItemCount) {
+                this.currentPage = this.startingPageIndex;
+                this.previousTotalItemCount = totalItemCount;
+                if (totalItemCount == 0) { this.loading = true; }
             }
+            // If it’s still loading, we check to see if the dataset count has
+            // changed, if so we conclude it has finished loading and update the current page
+            // number and total item count.
+            if (loading && (totalItemCount > previousTotalItemCount)) {
+                loading = false;
+                previousTotalItemCount = totalItemCount;
+                currentPage++;
+            }
+
+            // If it isn’t currently loading, we check to see if we have breached
+            // the visibleThreshold and need to reload more data.
+            // If we do need to reload some more data, we execute onLoadMore to fetch the data.
+            if (!loading && (totalItemCount - visibleItemCount)<=(firstVisibleItem + visibleThreshold)) {
+                onLoadMore(currentPage + 1, totalItemCount);
+                loading = true;
+            }
+        }
+
+        // Defines the process for actually loading more data based on page
+        public abstract void onLoadMore(int page, int totalItemsCount);
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            // Don't take any action on changed
         }
     }
     /**
@@ -150,7 +174,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      */
     void refreshListBySearch(String search,boolean next) {
         if(currentSearchType.equals("Звичайний пошук")) {
-            RestClient.getApi().search(search, next?++currentPage:currentPage,"ngram",this);
+            RestClient.getApi().search(search, next?(currentPage+1):currentPage,"ngram",this);
         }
         else{
             MovieDatabaseHelper dbHelper = new MovieDatabaseHelper(getApplicationContext());
@@ -163,13 +187,13 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
      * метод оновлює список фільмів що знаходяться у списку "до перегляду"
      */
     void refreshWatchList(boolean next){
-        RestClient.getApi().getWatchListMovies(RestClient.sessionId,next?++currentPage:currentPage,this);
+        RestClient.getApi().getWatchListMovies(RestClient.sessionId,next?(currentPage+1):currentPage,this);
     }
     /**
      * оновлює список данними в залежності від обраної вкладки
      */
     void refreshListByTab(boolean next) {
-        RestClient.getApi().getMovies(currentTask,next?++currentPage:currentPage,this);
+        RestClient.getApi().getMovies(currentTask,next?(currentPage+1):currentPage,this);
     }
     private TabHost.OnTabChangeListener tabChangeListener = new TabHost.OnTabChangeListener() {
         @Override
@@ -178,6 +202,7 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             currentPage=1;
             if(listView.getAdapter()!=null)
                 ((MovieListAdapter)listView.getAdapter()).getMovies().clear();
+
 
             switch(currentTask){
                 case "favorite":refreshFavorites(false);
@@ -293,19 +318,21 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                 int end = begin + 20;
                 if (Movie.favorites.size() <= end)
                     end = Movie.favorites.size();
-                refreshList(new ArrayList<>(Movie.favorites.subList(begin,end)),false);
+                List<Movie> mvs=(Movie.favorites.size()==1)?Movie.favorites:new ArrayList<>(Movie.favorites.subList(begin,end));
+                refreshList((ArrayList<Movie>)mvs,false);
             } else {
                 listAdapter.setMovies(new ArrayList<Movie>());
                 listView.setAdapter(listAdapter);
             }
         }
         else{
-            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,next?++currentPage:currentPage,this);
+            RestClient.getApi().getFavoriteMovies(RestClient.sessionId,next?(currentPage+1):currentPage,this);
         }
     }
     private OnItemClickListener detailsListener = new OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
             final Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
             MovieListAdapter adapter = (MovieListAdapter) listView.getAdapter();
             final Movie movie = adapter.getMovie(position);
@@ -339,11 +366,6 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
         }
     };
 
-/*    private int currentPopularPage = 1;
-    private int currentUpcomingPage = 1;
-    private int currentTopRatedPage = 1;
-    private int currentFavoritePage = 1;
-    private int currentWatchListPage=1;*/
     private int currentPage = 1;
     private int totalPages = 1000;
 
@@ -564,11 +586,12 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
                 if (isOnline()) {
                     currentPage=1;
                     if (searchEditText.getText().toString().equals("")) {
+                        tabs.setVisibility(View.VISIBLE);
                         currentTask = tabs.getCurrentTabTag();
                         refreshListByTab(false);
                     } else {
                         currentTask = "search";
-
+                        tabs.setVisibility(View.GONE);
                         String encoded=Uri.encode(searchEditText.getText().toString());
                         refreshListBySearch(encoded,false);
                     }
@@ -583,7 +606,30 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
 
         listView = (ListView) findViewById(R.id.listView);
         listView.setOnItemClickListener(detailsListener);
-        listView.setOnScrollListener(new InfiniteScrollListener());
+        listView.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            switch (currentTask) {
+                                default:
+                                    refreshListByTab(true);
+                                    break;
+                                case "watchlist":
+                                    refreshWatchList(true);
+                                    break;
+                                case "favorite":
+                                    refreshFavorites(true);
+                                case "search":
+                                    refreshListBySearch(Uri.encode(((EditText) findViewById(R.id.searchMovieEdit)).getText().toString()), true);
+                            }
+
+                        }
+                    });
+                }
+        });
         registerForContextMenu(listView);
         tabs = (TabHost) findViewById(R.id.tabhost);
         tabs.setup();
@@ -631,6 +677,17 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 currentSearchType=(String)parent.getItemAtPosition(position);
+                if (isOnline()) {
+                    currentPage=1;
+                    if (searchEditText.getText().toString().equals("")) {
+                        currentTask = tabs.getCurrentTabTag();
+                        refreshListByTab(false);
+                    } else {
+                        currentTask = "search";
+                        String encoded=Uri.encode(searchEditText.getText().toString());
+                        refreshListBySearch(encoded,false);
+                    }
+                }
             }
 
             @Override
@@ -688,13 +745,15 @@ public class MainActivity extends Activity implements Callback<MovieRequestResul
     @Override
     public void success(MovieRequestResult movieRequestResult, Response response) {
         if (movieRequestResult.getResults() != null) {
+            currentPage=movieRequestResult.getPage();
             totalPages = movieRequestResult.getTotal_pages();
-            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), (movieRequestResult.getPage() > 1));
+            refreshList((ArrayList<Movie>) movieRequestResult.getResults(), (currentPage > 1));
         }
     }
 
     @Override
     public void failure(RetrofitError error) {
+
         if(!isOnline())
         Toast.makeText(this,"Будь ласка під'єднайтесь до мережі інтернет.",Toast.LENGTH_LONG).show();
     }

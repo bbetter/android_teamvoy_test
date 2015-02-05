@@ -32,7 +32,7 @@
                     android:text="Завантажити зображення"
                     android:id="@+id/uploadPhotoBtn"/>
 
-                <ImageView  android:id="@+id/uploadedImage" android:layout_height="wrap_content" android:layout_width="300dp"/>
+                <com.example.andriypuhach.android_teamvoy_test.adapters.ImageViewWithContextView android:id="@+id/uploadedImage" android:layout_height="wrap_content" android:layout_width="300dp"/>
                 <Button
                     android:text="Підтвердити"
                     android:id="@+id/submitNoteBtn"/>
