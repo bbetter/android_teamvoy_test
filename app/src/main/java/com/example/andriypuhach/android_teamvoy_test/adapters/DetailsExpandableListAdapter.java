@@ -3,6 +3,8 @@ package com.example.andriypuhach.android_teamvoy_test.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.andriypuhach.android_teamvoy_test.R;
+import com.example.andriypuhach.android_teamvoy_test.activities.MainActivity;
 import com.example.andriypuhach.android_teamvoy_test.models.Movie;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
@@ -35,6 +38,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
     private final String [] headers={"Інформація","Знімались","Знімали","Відео","Рецензії","Нотатки"};
     private LayoutInflater inflater;
+    private Activity activity;
     private Context context;
     private Movie movie;
 
@@ -44,6 +48,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
     public DetailsExpandableListAdapter(Activity activity,Movie mv){
+        this.activity=activity;
         context=activity.getApplicationContext();
         inflater=LayoutInflater.from(context);
         setMovie(mv);
@@ -121,7 +126,10 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
 
                 case VIEW_TYPE_INFO: {
                     if(convertView==null || ((ViewHolder)convertView.getTag()).tvBudget==null) {
-                        convertView = inflater.inflate(R.layout.details_row_info, parent, false);
+                        //!!!!!
+                        //тут використано окремий inflater і доступ через activity через holder.tvHomePage який є лінком і дозволяє переходити на сайт фільму
+                        //!!!!!
+                        convertView = LayoutInflater.from(activity).inflate(R.layout.details_row_info, parent, false);
                         holder.tvBudget = (TextView) convertView.findViewById(R.id.tvBudget);
                         holder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
                         holder.tvCompanies = (TextView) convertView.findViewById(R.id.tvCompany);

@@ -32,7 +32,11 @@
                 <TextView android:id="@+id/tvHomePage"
                     android:text="www.hobbit.com"
                     android:gravity="fill_horizontal|bottom"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="5"/>
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="5"
+                    android:autoLink="all"
+                    android:linksClickable="true"/>
             </TableRow>
             <TableRow
                 android:layout_width="wrap_content"
