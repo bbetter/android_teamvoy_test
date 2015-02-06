@@ -20,6 +20,8 @@ public interface RetrofitMovieService {
 
     @GET("/movie/{thing}?api_key=" + apiKey)
     public void getMovies(@Path("thing") String thing, @Query("page") int page, Callback<MovieRequestResult> movieRes);
+    @GET("/movie/{thing}?api_key=" + apiKey)
+    public MovieRequestResult getMovies(@Path("thing") String thing, @Query("page") int page);
     @GET("/movie/{id}?api_key=" + apiKey)
     public void getDetails(@Path("id") int id,@Query("append_to_response")String appendToResponse,Callback<Movie.Details> det);
     @GET("/search/movie?api_key=" + apiKey)
@@ -30,8 +32,6 @@ public interface RetrofitMovieService {
     public void validateToken(@Query("request_token") String token, @Query("username") String username, @Query("password") String password, Callback<JsonElement> jsonResult);
     @GET("/authentication/session/new?api_key=" + apiKey)
     public void getNewSession(@Query("request_token") String token, Callback<JsonElement> jsonResult);
-  //  @GET("/account?api_key=" + apiKey)
-   // public void getAccountInfo(@Query("session_id") String sessionId, Callback<JsonElement> jsonResult);
     //TODO: /account{id}/ що за параметр такий? і чому неважливо що в нього передаєШ?
     @GET("/account/100/watchlist/movies?api_key=" + apiKey)
     public void getWatchListMovies(@Query("session_id") String sessionId, @Query("page") int page, Callback<MovieRequestResult> movieRes);

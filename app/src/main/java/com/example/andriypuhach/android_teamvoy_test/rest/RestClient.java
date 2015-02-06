@@ -15,6 +15,8 @@ import org.joda.time.DateTime;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import retrofit.ErrorHandler;
@@ -44,9 +46,11 @@ public class RestClient {
                 .setDateFormat("yyyy-mm-dd")
                 .registerTypeAdapter(DateTime.class, new DateTimeTypeConverter())
                 .create();
+        Executor executor = Executors.newSingleThreadExecutor();
         api  = new RestAdapter.Builder()
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setEndpoint(BASE_URL)
+                .setExecutors(executor, executor)
                 .setConverter(new GsonConverter(gson))
                 .setClient(new OkClient(ok))
 

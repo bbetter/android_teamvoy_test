@@ -134,7 +134,7 @@ public class DetailsExpandableListAdapter extends BaseExpandableListAdapter {
                         holder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
                         holder.tvCompanies = (TextView) convertView.findViewById(R.id.tvCompany);
                         holder.tvGenres = (TextView) convertView.findViewById(R.id.tvGenre);
-                        holder.tvHomePage = (TextView) convertView.findViewById(R.id.tvHomePage);
+                        holder.tvHomePage =  (TextView) convertView.findViewById(R.id.tvHomePage);
                         holder.tvOverview = (TextView) convertView.findViewById(R.id.tvOverview);
                         holder.tvRevenue = (TextView) convertView.findViewById(R.id.tvRevenue);
                         holder.tvTagLine = (TextView) convertView.findViewById(R.id.tvTagline);
