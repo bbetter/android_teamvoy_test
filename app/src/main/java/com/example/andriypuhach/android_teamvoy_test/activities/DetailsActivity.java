@@ -36,7 +36,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class DetailsActivity extends Activity implements Callback<Movie.Details> {
+public class    DetailsActivity extends Activity implements Callback<Movie.Details> {
 
     private ExpandableListView detailsListView;
     private DetailsExpandableListAdapter detailsListAdapter;
