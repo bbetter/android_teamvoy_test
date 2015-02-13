@@ -1,6 +1,8 @@
 package com.example.andriypuhach.android_teamvoy_test.models;
 
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -12,6 +14,7 @@ public class MovieRequestResult implements Serializable {
     private int page;
 
     private int total_pages;
+    private int total_results;
 
     public List<Movie> getResults() {
         return results;
@@ -35,5 +38,21 @@ public class MovieRequestResult implements Serializable {
 
     public void setTotal_pages(int total_pages) {
         this.total_pages = total_pages;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return
+                page==((MovieRequestResult)o).getPage()
+                && results.size()==((MovieRequestResult)o).getResults().size();
+
+    }
+
+    public int getTotal_results() {
+        return total_results;
+    }
+
+    public void setTotal_results(int total_results) {
+        this.total_results = total_results;
     }
 }

@@ -205,6 +205,11 @@ public class Movie implements Serializable {
         return movies;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return id==((Movie)o).getId();
+    }
+
     public static class Details implements Serializable {
         private float budget;
         private float revenue;
